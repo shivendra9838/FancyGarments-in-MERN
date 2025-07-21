@@ -1,0 +1,25 @@
+<svg width="73" height="73" viewBox="0 0 73 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.5" y="0.5" width="72" height="72" rx="16" fill="#F3F4F6" stroke="#E5E7EB"/>
+  <g filter="url(#shadow)">
+    <rect x="16" y="20" width="41" height="33" rx="6" fill="#FBBF24"/>
+    <rect x="16" y="20" width="41" height="33" rx="6" fill="url(#boxGradient)"/>
+    <rect x="16" y="20" width="41" height="33" rx="6" stroke="#F59E42" stroke-width="2"/>
+    <rect x="16" y="20" width="41" height="10" rx="4" fill="#FDE68A"/>
+    <rect x="16" y="20" width="41" height="10" rx="4" fill="url(#lidGradient)"/>
+    <rect x="16" y="20" width="41" height="10" rx="4" stroke="#F59E42" stroke-width="2"/>
+    <rect x="34" y="20" width="5" height="33" rx="2.5" fill="#F59E42"/>
+  </g>
+  <defs>
+    <linearGradient id="boxGradient" x1="16" y1="20" x2="57" y2="53" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F59E42"/>
+    </linearGradient>
+    <linearGradient id="lidGradient" x1="16" y1="20" x2="57" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#FBBF24"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="73" height="73" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#F59E42" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+</svg>

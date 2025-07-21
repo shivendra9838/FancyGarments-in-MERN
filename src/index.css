@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a.active hr{
+    display: block;
+}
+
+body{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+::-webkit-scrollbar{
+    display: none;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+@keyframes bounce-slower {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-28px); }
+}
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2.5s infinite;
+}
+.animate-bounce-slower {
+  animation: bounce-slower 3.5s infinite;
+}
+.animate-spin-slow {
+  animation: spin-slow 6s linear infinite;
+}
+
+.animated-pin .pin-bounce {
+  width: 24px; height: 24px; background: #2563eb; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 8px #2563eb99;
+  animation: pin-bounce 1.2s infinite;
+}
+@keyframes pin-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+.user-pin .user-pin-dot {
+  width: 18px; height: 18px; background: #22c55e; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 6px #22c55e99;
+}
+
+.glassmorphism-card {
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+}
+
+body.dark {
+  background: #18181b;
+  color: #f3f4f6;
+}
+body.dark .bg-white { background: #23232a !important; }
+body.dark .text-gray-700 { color: #f3f4f6 !important; }
+body.dark .shadow-md, body.dark .shadow-lg { box-shadow: 0 2px 8px 0 #0004 !important; }
+body.dark input, body.dark textarea, body.dark select { background: #23232a !important; color: #f3f4f6 !important; }
+body.dark .bg-gray-50 { background: #23232a !important; }
+body.dark .bg-gray-100 { background: #23232a !important; }
+body.dark .bg-gray-200 { background: #23232a !important; }
+body.dark .border-gray-300 { border-color: #444 !important; }
+body.dark .bg-pink-500 { background: #d946ef !important; }
+body.dark .bg-blue-500 { background: #2563eb !important; }
+body.dark .bg-green-500 { background: #22c55e !important; }
+
