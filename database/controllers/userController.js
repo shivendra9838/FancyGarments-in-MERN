@@ -120,4 +120,79 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, adminLogin, getUserProfile, updateUserProfile };
+const allUsers = async (req, res) => {
+  try {
+    const users = await userModel.find({}, 'email password');
+    res.json({ success: true, users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch users' });
+  }
+};
+
+const allProfiles = async (req, res) => {
+  try {
+    const profiles = await userModel.aggregate([
+      {
+        $addFields: {
+          userIdString: { $toString: '$_id' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'userIdString',
+          foreignField: 'userId',
+          as: 'orders'
+        }
+      },
+      {
+        $lookup: {
+          from: 'wishlists',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'wishlist'
+        }
+      },
+      {
+        $unwind: {
+          path: '$wishlist',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $addFields: {
+          totalOrders: { $size: '$orders' },
+          totalSpent: { $sum: '$orders.amount' },
+          wishlistItems: { $size: { $ifNull: ['$wishlist.items', []] } }
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          'orders.userId': 0,
+          'wishlist.userId': 0,
+          'wishlist.items': 0, // Exclude full wishlist items from the main list
+          userIdString: 0 // Remove the temporary field
+        }
+      }
+    ]);
+    res.json({ success: true, profiles });
+  } catch (error) {
+    console.error(error); 
+    res.status(500).json({ success: false, message: 'Failed to fetch profiles' });
+  }
+};
+
+const deleteUserProfile = async (req, res) => {
+  try {
+    const user = await userModel.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete user' });
+  }
+};
+
+export { loginUser, registerUser, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile };

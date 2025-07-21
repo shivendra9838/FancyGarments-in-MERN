@@ -8,12 +8,16 @@ import Title from '../components/Title';
 import html2pdf from 'html2pdf.js';
 import { Dialog } from '@headlessui/react';
 import { FaBox, FaTruck, FaCheckCircle, FaFileInvoice, FaEnvelope, FaSearchLocation } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import CancellationModal from '../components/CancellationModal';
 
 const Orders = () => {
   const { token, backendUrl, currency } = useContext(ShopContext);
   const [orders, setOrders] = useState([]);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [trackingOrder, setTrackingOrder] = useState(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     const loadOrderData = async () => {
@@ -26,21 +30,13 @@ const Orders = () => {
         );
 
         if (response.data.success) {
-          const allOrdersItem = [];
-          response.data.orders.forEach((order) => {
-            order.items.forEach((item) => {
-              allOrdersItem.push({
-                ...item,
-                status: order.status,
-                payment: order.payment,
-                paymentMethod: order.paymentMethod,
-                date: order.date,
-                orderId: order._id,
-                total: order.amount,
-              });
-            });
-          });
-          setOrders(allOrdersItem.reverse());
+          const processedOrders = response.data.orders.map(order => ({
+            ...order,
+            orderId: order._id,
+            total: order.amount,
+            items: order.items || []
+          })).reverse();
+          setOrders(processedOrders);
         } else {
           toast.error('Failed to load orders');
         }
@@ -51,14 +47,50 @@ const Orders = () => {
     };
 
     loadOrderData();
-  }, [token]);
+  }, [token, backendUrl]);
+
+  const handlePayment = async (order) => {
+    try {
+      const { data } = await axios.post(`${backendUrl}/api/order/stripe`, 
+        { cartItems: order.items, address: order.address }, 
+        { headers: { token } }
+      );
+      if (data.success) {
+        window.location.replace(data.session_url);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      toast.error('Payment processing failed.');
+    }
+  };
+
+  const handleCancelOrder = async (orderId, reason) => {
+    try {
+      const { data } = await axios.post(`${backendUrl}/api/order/cancel`, { orderId, reason }, { headers: { token } });
+      if (data.success) {
+        toast.success('Order cancelled successfully.');
+        setOrders(prevOrders => prevOrders.map(o => o.orderId === orderId ? { ...o, status: 'Cancelled' } : o));
+        setIsCancelModalOpen(false);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      toast.error('Failed to cancel order.');
+    }
+  };
+
+  const openCancelModal = (order) => {
+    setSelectedOrder(order);
+    setIsCancelModalOpen(true);
+  };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'text-yellow-600';
-      case 'shipped': return 'text-blue-600';
-      case 'delivered': return 'text-green-600';
-      default: return 'text-gray-600';
+    switch (status.toLowerCase()) {
+      case 'pending': return 'border-yellow-400 bg-yellow-50';
+      case 'shipped': return 'border-blue-400 bg-blue-50';
+      case 'delivered': return 'border-green-400 bg-green-50';
+      default: return 'border-gray-300 bg-gray-50';
     }
   };
 
@@ -207,110 +239,112 @@ const Orders = () => {
   }
 
   return (
-    <div className="py-8 px-4 max-w-5xl mx-auto">
-      <Title title="My Orders" />
-      <h2 className="text-2xl font-bold mb-4 text-center">My Orders</h2>
+    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <Title text1="My" text2="Orders" />
       {orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16">
+        <div className="flex flex-col items-center justify-center py-16 text-center">
           <img src="https://cdn.dribbble.com/users/2046015/screenshots/6012385/no_orders.png" alt="No Orders" className="w-48 h-48 mb-6 opacity-80" />
           <p className="text-lg text-gray-500 font-semibold">You have no orders yet.</p>
+          <p className="text-sm text-gray-400 mt-2">Looks like you haven't placed any orders with us.</p>
         </div>
       ) : (
-        <ul className="space-y-8">
+        <div className="space-y-8">
           {orders.map((order, index) => {
             const date = order.date ? new Date(order.date).toLocaleDateString() : 'Invalid Date';
-            const imageUrl = order.image?.startsWith('http')
-              ? order.image
-              : `${backendUrl}/uploads/${order.image}`;
             const statusClass = statusColors[order.status?.toLowerCase()] || statusColors.default;
-            const badgeClass = statusBadgeColors[order.status?.toLowerCase()] || statusBadgeColors.default;
-            const paymentClass = paymentBadgeColors[String(order.payment)] || paymentBadgeColors.false;
-            const methodClass = methodBadgeColors[order.paymentMethod] || methodBadgeColors.default;
+
             return (
-              <li key={index} className={`relative border-l-8 ${statusClass} rounded-xl shadow-lg flex flex-col md:flex-row items-start gap-6 p-6 transition-transform hover:scale-[1.01]`}> 
-                <img
-                  src={
-                    order.image
-                      ? (order.image.startsWith('http')
-                          ? order.image
-                          : `${backendUrl}/uploads/${order.image}`)
-                      : 'https://placehold.co/112x112?text=No+Image'
-                  }
-                  alt={order.name}
-                  className="w-28 h-28 object-cover rounded-lg shadow-md border-2 border-white bg-white"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'https://placehold.co/112x112?text=No+Image';
-                  }}
-                />
-                <div className="flex-1 w-full">
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${badgeClass}`}>{order.status}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${paymentClass}`}>{order.payment ? 'Paid' : 'Unpaid'}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${methodClass}`}>{order.paymentMethod}</span>
+              <div key={index} className={`bg-white rounded-2xl shadow-lg border-l-8 ${statusClass} p-6 transition-transform`}>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-4 border-b">
+                  <div>
+                    <p className="font-bold text-lg">Order ID: <span className="font-mono text-gray-600">{order.orderId}</span></p>
+                    <p className="text-sm text-gray-500">Date: {date}</p>
                   </div>
-                  <div className="flex flex-col md:flex-row md:items-center md:gap-8 gap-1 mb-2">
-                    <p className="font-bold text-lg text-gray-800">{order.name}</p>
-                    <p className="text-gray-500 text-sm">Order ID: <span className="font-mono">{order.orderId}</span></p>
-                  </div>
-                  <div className="flex flex-wrap gap-4 mb-2 text-sm">
-                    <span><strong>Qty:</strong> {order.quantity}</span>
-                    <span><strong>Size:</strong> {order.size || 'N/A'}</span>
-                    <span><strong>Total:</strong> <span className="font-bold">{currency}{order.total}</span></span>
-                    <span><strong>Date:</strong> {date}</span>
-                  </div>
-                  {renderProgressBar(order.status)}
-                  <div className="flex gap-3 mt-6 flex-wrap">
-                    <button
-                      onClick={() => {
-                        setTrackingOrder(order);
-                        setIsTrackingOpen(true);
-                      }}
-                      className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
-                    >
-                      <FaSearchLocation /> Track Order
-                    </button>
-                    <button
-                      onClick={() => downloadInvoice(order)}
-                      className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
-                    >
-                      <FaFileInvoice /> Download Invoice
-                    </button>
-                    <button
-                      onClick={() => sendInvoiceEmail(order)}
-                      className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
-                    >
-                      <FaEnvelope /> Email Invoice
-                    </button>
+                  <div className="text-right mt-4 sm:mt-0">
+                    <p className="font-bold text-xl">{currency}{order.total.toFixed(2)}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${paymentBadgeColors[String(order.payment)] || paymentBadgeColors.false}`}>{order.payment ? 'Paid' : 'Unpaid'}</span>
                   </div>
                 </div>
-              </li>
+
+                <div className="space-y-4">
+                  {order.items.map((item, itemIndex) => {
+                    const imageUrl = item.image?.startsWith('http')
+                      ? item.image
+                      : `${backendUrl}/uploads/${item.image}`;
+                    return (
+                      <Link to={`/product/${item._id}`} key={itemIndex} className="flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors">
+                        <img
+                          src={imageUrl}
+                          alt={item.name}
+                          className="w-20 h-20 object-cover rounded-lg border"
+                          onError={(e) => { e.target.src = 'https://placehold.co/80x80?text=No+Image'; }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-800">{item.name}</p>
+                          <div className="flex gap-4 text-sm text-gray-500">
+                            <span>Qty: {item.quantity}</span>
+                            <span>Size: {item.size || 'N/A'}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 pt-4 border-t">
+                  {order.payment ? (
+                    <div>
+                      <h3 className="font-bold text-center mb-2">Delivery Status</h3>
+                      {renderProgressBar(order.status)}
+                      <p className='text-center text-sm text-gray-500 mt-2'>Your order will be delivered soon.</p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <h3 className="font-bold text-lg mb-2 text-red-600">Payment Required</h3>
+                      <p className="text-sm text-gray-600 mb-4">Complete your payment using Stripe. No extra charges apply.</p>
+                      <button
+                        onClick={() => handlePayment(order)}
+                        className="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md"
+                      >
+                        Make Payment
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 mt-6 flex-wrap justify-center border-t pt-4">
+                  <button
+                    onClick={() => downloadInvoice(order)}
+                    className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
+                  >
+                    <FaFileInvoice /> Download Invoice
+                  </button>
+                  <button
+                    onClick={() => sendInvoiceEmail(order)}
+                    className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
+                  >
+                    <FaEnvelope /> Email Invoice
+                  </button>
+                  {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
+                    <button
+                      onClick={() => openCancelModal(order)}
+                      className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
+              </div>
             );
           })}
-        </ul>
-      )}
-
-      <Dialog open={isTrackingOpen} onClose={() => setIsTrackingOpen(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl border-t-8 border-blue-400">
-            <Dialog.Title className="text-2xl font-bold mb-4 text-blue-700 flex items-center gap-2"><FaSearchLocation /> Tracking Details</Dialog.Title>
-            {trackingOrder && (
-              <div>
-                <p className="mb-2"><strong>Product:</strong> {trackingOrder.name}</p>
-                <p className="mb-2"><strong>Status:</strong> <span className="capitalize">{trackingOrder.status}</span></p>
-                {renderProgressBar(trackingOrder.status)}
-              </div>
-            )}
-            <button
-              className="mt-6 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg shadow font-semibold"
-              onClick={() => setIsTrackingOpen(false)}
-            >
-              Close
-            </button>
-          </Dialog.Panel>
         </div>
-      </Dialog>
+      )}
+      <CancellationModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelOrder}
+        orderId={selectedOrder?.orderId}
+      />
     </div>
   );
 };

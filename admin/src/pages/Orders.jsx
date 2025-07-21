@@ -227,6 +227,7 @@ const Orders = ({ token }) => {
                   <option value="Shipped">Shipped</option>
                   <option value="Out for Delivery">Out for Delivery</option>
                   <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
                 <button
                   onClick={() => downloadInvoice(order)}
@@ -234,6 +235,11 @@ const Orders = ({ token }) => {
                 >
                   Download Invoice
                 </button>
+                {order.cancellationReason && (
+                  <p className="text-xs text-red-600 mt-2">
+                    <strong>Reason:</strong> {order.cancellationReason}
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -115,7 +115,7 @@ const Footer = () => {
 
       <div className="mt-8 text-center text-gray-500 text-xs">
         <hr className="mb-4" />
-        <p>Copyright © 2024 Fancy Garments - All Rights Reserved</p>
+        <p>Copyright © 2025 Fancy Garments - All Rights Reserved</p>
       </div>
     </footer>
   );

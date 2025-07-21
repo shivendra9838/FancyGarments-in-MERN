@@ -18,37 +18,15 @@ const ProductItem = ({ item }) => {
   if (!item) return null;
 
   const { _id, name, price, images } = item;
-  const { currency, backendUrl, token } = useContext(ShopContext);
+  const { currency, backendUrl, token, addToWishlist } = useContext(ShopContext);
 
   const imgSrc = images?.[0]
     ? (images[0].startsWith('http') ? images[0] : `${backendUrl}/${images[0].replace(/^\/+/, '')}`)
     : '/placeholder.jpg';
 
-  // Add to Wishlist logic
-  const handleAddToWishlist = async (e) => {
+  const handleAddToWishlist = (e) => {
     e.preventDefault();
-    const newItem = { productId: _id, name, price, image: imgSrc };
-    let current = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    if (current.find(i => i._id === _id)) {
-      toast.info('Already in your wishlist!');
-      return;
-    }
-    const updated = [...current, newItem];
-    localStorage.setItem('wishlist', JSON.stringify(updated));
-    if (typeof setWishlist === 'function') setWishlist(updated);
-    toast.success('Added to your wishlist!');
-    // Backend sync
-    if (token) {
-      try {
-        await axios.post(
-          `${backendUrl}/api/wishlist/add`,
-          newItem,
-          { headers: { token } }
-        );
-      } catch (err) {
-        // Optionally show a toast or log error
-      }
-    }
+    addToWishlist(item);
   };
 
   return (

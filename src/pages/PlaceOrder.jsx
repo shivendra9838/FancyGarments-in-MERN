@@ -103,7 +103,7 @@ const PlaceOrder = () => {
   }, [orderPlaced, orderId, method, navigate]);
 
   return (
-    <div className="bg-gray-100 min-h-screen py-10 px-4">
+    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       {orderPlaced ? (
         <div className="text-center py-16">
           <Confetti />
@@ -112,48 +112,53 @@ const PlaceOrder = () => {
           <p className="text-gray-600">Redirecting to order verification...</p>
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto bg-white rounded-lg shadow p-6">
-          <Title text="Delivery Information" />
+        <div className="max-w-6xl mx-auto">
+          <Title text1="Checkout" text2="Details" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            {/* Address Form */}
-            <div className="space-y-4">
-              <input type="text" placeholder="First Name" value={address.firstName} onChange={(e) => setAddress({ ...address, firstName: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="text" placeholder="Last Name" value={address.lastName} onChange={(e) => setAddress({ ...address, lastName: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="text" placeholder="Street Address" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="text" placeholder="City" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="text" placeholder="State" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="text" placeholder="Zip Code" value={address.zipCode} onChange={(e) => setAddress({ ...address, zipCode: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="text" placeholder="Country" value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} className="w-full p-2 border rounded-md" />
-              <input type="tel" placeholder="Phone Number" value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value })} className="w-full p-2 border rounded-md" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-8">
+            {/* Delivery Information Form */}
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-6">Delivery Information</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <input type="text" placeholder="First Name" value={address.firstName} onChange={(e) => setAddress({ ...address, firstName: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                <input type="text" placeholder="Last Name" value={address.lastName} onChange={(e) => setAddress({ ...address, lastName: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                <input type="text" placeholder="Street Address" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 col-span-1 sm:col-span-2" />
+                <input type="text" placeholder="City" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                <input type="text" placeholder="State" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                <input type="text" placeholder="Zip Code" value={address.zipCode} onChange={(e) => setAddress({ ...address, zipCode: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                <input type="text" placeholder="Country" value={address.country} onChange={(e) => setAddress({ ...address, country: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                <input type="tel" placeholder="Phone Number" value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value })} className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 col-span-1 sm:col-span-2" />
+              </div>
             </div>
 
-            {/* Summary & Payment */}
-            <div>
+            {/* Order Summary & Payment */}
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
               <CartTotal />
-              <div className="mt-6">
-                <h3 className="font-medium mb-2">Select Payment Method:</h3>
+              <div className="mt-8">
+                <h3 className="text-xl font-bold mb-4">Payment Method</h3>
+                <div className="space-y-4">
+                  <label className="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:border-pink-500 transition-colors">
+                    <input type="radio" name="payment" checked={method === 'cod'} onChange={() => setMethod('cod')} className="form-radio text-pink-500 focus:ring-pink-500" />
+                    <img src="https://cdn-icons-png.flaticon.com/512/929/929416.png" alt="COD" className="w-8 h-8" />
+                    <span className='font-semibold'>Cash on Delivery</span>
+                  </label>
 
-                <label className="flex items-center gap-2 mb-2">
-                  <input type="radio" name="payment" checked={method === 'cod'} onChange={() => setMethod('cod')} />
-                  <img src="https://cdn-icons-png.flaticon.com/512/929/929416.png" alt="COD" className="w-6 h-6" />
-                  Cash on Delivery
-                </label>
+                  <label className="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:border-pink-500 transition-colors">
+                    <input type="radio" name="payment" checked={method === 'stripe'} onChange={() => setMethod('stripe')} className="form-radio text-pink-500 focus:ring-pink-500" />
+                    <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Stripe" className="w-8 h-8" />
+                    <span className='font-semibold'>Stripe</span>
+                  </label>
 
-                <label className="flex items-center gap-2 mb-2">
-                  <input type="radio" name="payment" checked={method === 'stripe'} onChange={() => setMethod('stripe')} />
-                  <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Stripe" className="w-6 h-6" />
-                  Stripe
-                </label>
-
-                <label className="flex items-center gap-2 mb-2">
-                  <input type="radio" name="payment" checked={method === 'razorpay'} onChange={() => setMethod('razorpay')} disabled />
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Razorpay_logo.svg" alt="Razorpay" className="w-6 h-6" />
-                  Razorpay (Coming Soon)
-                </label>
+                  <label className="flex items-center gap-4 p-4 border rounded-lg cursor-not-allowed bg-gray-100 text-gray-400">
+                    <input type="radio" name="payment" checked={method === 'razorpay'} onChange={() => setMethod('razorpay')} disabled className="form-radio" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Razorpay_logo.svg" alt="Razorpay" className="w-8 h-8" />
+                    <span>Razorpay (Coming Soon)</span>
+                  </label>
+                </div>
               </div>
 
-              <button onClick={handlePlaceOrder} className="bg-green-600 text-white w-full py-2 rounded mt-6 hover:bg-green-700 transition">
+              <button onClick={handlePlaceOrder} className="bg-pink-500 text-white w-full py-3 rounded-lg mt-8 font-bold text-lg hover:bg-pink-600 transition-colors shadow-lg">
                 Place Order
               </button>
             </div>

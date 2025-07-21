@@ -14,6 +14,97 @@ const ShopContextProvider = (props) => {
   const [products, setProducts] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [userData, setUserData] = useState(null);
+  const [wishlist, setWishlist] = useState(() => {
+    const stored = localStorage.getItem('wishlist');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [giftCard, setGiftCard] = useState({ code: '', discount: 0 });
+
+  // Apply Gift Card
+  const applyGiftCard = (code) => {
+    const totalItems = getCartCount();
+    if (totalItems <= 3) {
+      toast.error('Gift card is only applicable for more than 3 items.');
+      return;
+    }
+
+    if (userData) {
+      const isNewUser = new Date(userData.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const discount = isNewUser ? 20 : 10;
+      setGiftCard({ code, discount });
+      toast.success(`Applied ${discount}% discount!`);
+    } else {
+      toast.error('You must be logged in to apply a gift card.');
+    }
+  };
+
+  // Remove Gift Card
+  const removeGiftCard = () => {
+    setGiftCard({ code: '', discount: 0 });
+    toast.info('Gift card removed.');
+  };
+
+  // Add to Wishlist
+  const addToWishlist = async (item) => {
+    const newItem = {
+      productId: item._id,
+      name: item.name,
+      price: item.price,
+      image: item.images?.[0] ? (item.images[0].startsWith('http') ? item.images[0] : `${backendUrl}/${item.images[0].replace(/^\/+/, '')}`) : '/placeholder.jpg'
+    };
+    
+    // Update state and localStorage
+    setWishlist(prev => {
+      const exists = prev.find(i => i.productId === newItem.productId);
+      if (exists) {
+        toast.info('Already in your wishlist!');
+        return prev;
+      }
+      const updated = [...prev, newItem];
+      localStorage.setItem('wishlist', JSON.stringify(updated));
+      toast.success('Added to your wishlist!');
+      return updated;
+    });
+
+    // Backend sync
+    if (token) {
+      try {
+        await axios.post(
+          `${backendUrl}/api/wishlist/add`,
+          newItem,
+          { headers: { token } }
+        );
+      } catch (err) {
+        // Handle error silently or with a toast
+        console.error("Failed to sync wishlist with backend", err);
+      }
+    }
+  };
+
+  // Remove from Wishlist
+  const removeFromWishlist = async (productId) => {
+    // Update state and localStorage
+    setWishlist(prev => {
+      const updated = prev.filter(item => item.productId !== productId);
+      localStorage.setItem('wishlist', JSON.stringify(updated));
+      toast.success('Removed from wishlist!');
+      return updated;
+    });
+
+    // Backend sync
+    if (token) {
+      try {
+        await axios.post(
+          `${backendUrl}/api/wishlist/remove`,
+          { productId },
+          { headers: { token } }
+        );
+      } catch (err) {
+        console.error("Failed to sync wishlist removal with backend", err);
+      }
+    }
+  };
+
 
   // Fetch user profile
   const getUserProfile = async (token) => {
@@ -147,7 +238,7 @@ const ShopContextProvider = (props) => {
     setCartItems({});
   };
 
-  const value = {
+  const contextValue = {
     products,
     currency,
     delivery_fee,
@@ -167,9 +258,15 @@ const ShopContextProvider = (props) => {
     clearCart,
     userData,
     getUserProfile,
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+    giftCard,
+    applyGiftCard,
+    removeGiftCard
   };
 
-  return <ShopContext.Provider value={value}>{props.children}</ShopContext.Provider>;
+  return <ShopContext.Provider value={contextValue}>{props.children}</ShopContext.Provider>;
 };
 
 export default ShopContextProvider;

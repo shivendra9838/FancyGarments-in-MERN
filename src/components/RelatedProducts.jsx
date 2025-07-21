@@ -1,29 +1,30 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { ShopContext } from '../context/ShopContext'
+import React, { useContext, useEffect, useState } from 'react';
+import { ShopContext } from '../context/ShopContext';
 import ProductItem from './ProductItem';
-import { Link } from 'react-router-dom';
 
-const RelatedProducts = ({category,subCategory}) => {
-    const {products} = useContext(ShopContext);
-    const [related,setRelated] = useState([]);
-    useEffect(()=>{
-        if(products.length > 0){
-            let productCopy = products.slice();  //it will copy of all product
-            productCopy = productCopy.filter((item)=>category === item.category || item.subCategory === subCategory)
+const RelatedProducts = ({ subCategory, currentProductId }) => {
+    const { products } = useContext(ShopContext);
+    const [related, setRelated] = useState([]);
 
-            setRelated(productCopy.slice(0,5));
-            console.log(related)
+    useEffect(() => {
+        if (products.length > 0) {
+            const shuffle = (arr) => arr.sort(() => 0.5 - Math.random());
+            
+            const filtered = products.filter((item) => 
+                item.subCategory === subCategory && item._id !== currentProductId
+            );
+
+            setRelated(shuffle(filtered).slice(0, 4));
         }
-    },[products])
-  return (
-    <div className='flex flex-row gap-4 gap-y-6'>
-        {
-          related.map((item)=>
-            <ProductItem key={item._id} item={item}/>
-          )
-        }
-    </div>
-  )
-}
+    }, [products, subCategory, currentProductId]);
 
-export default RelatedProducts
+    return (
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
+            {related.map((item) => (
+                <ProductItem key={item._id} item={item} />
+            ))}
+        </div>
+    );
+};
+
+export default RelatedProducts;

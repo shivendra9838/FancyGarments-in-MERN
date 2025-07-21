@@ -39,7 +39,7 @@ const Cart = () => {
             return (
               <div
                 key={`${item._id}-${item.size}`}
-                className='py-4 border-t border-b text-gray-700 grid grid-cols-[4fr_2fr_0.5fr] items-center gap-4'
+                className='py-4 border-t border-b text-gray-700 grid grid-cols-1 md:grid-cols-[4fr_2fr_0.5fr] items-center gap-4'
               >
                 <div className='flex items-start gap-6'>
                   <img className='w-20' src={productData.images[0]} alt={productData.name} />
@@ -75,12 +75,15 @@ const Cart = () => {
           })
         }
 
-        <div className='flex justify-end my-20'>
-          <div className='w-[450px]'>
+        <div className='flex flex-col md:flex-row justify-between my-20 gap-12'>
+          <div className='flex-1'>
+            {/* This space can be used for related products or other content if desired */}
+          </div>
+          <div className='w-full md:w-[450px]'>
             <CartTotal />
-            <div className='w-full text-end'>
+            <div className='w-full text-end mt-8'>
               <Link to='/place-order'>
-                <button className='bg-black text-white text-sm my-8 px-8 py-3'>
+                <button className='bg-black text-white text-sm px-8 py-3 rounded-lg hover:bg-gray-800 transition-colors'>
                   PROCEED TO CHECKOUT
                 </button>
               </Link>

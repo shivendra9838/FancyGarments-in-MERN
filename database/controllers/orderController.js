@@ -55,7 +55,7 @@ const placeOrder = async (req, res) => {
 // ✅ Stripe
 const placeOrderStripe = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userId;
     const { cartItems, address } = req.body;
     const { origin } = req.headers;
 
@@ -113,22 +113,25 @@ const placeOrderStripe = async (req, res) => {
 
 // VerifyStripe 
 const verifyStripe = async (req, res) => {
-  const userId = req.userId;
   const { success, orderId } = req.body;
 
-  if (!userId || !orderId) {
-    return res.status(400).json({ success: false, message: "Missing userId or orderId." });
+  if (!orderId) {
+    return res.status(400).json({ success: false, message: "Missing orderId." });
   }
 
   try {
     if (success === "true") {
+      const order = await orderModel.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+      }
       await orderModel.findByIdAndUpdate(orderId, {
         payment: true,
         delivery_status: "processing",
         paymentMethod: "Stripe",
       });
 
-      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+      await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
 
       const updatedOrder = await orderModel.findById(orderId); // Fetch updated order
       return res.json({
@@ -199,6 +202,25 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+const cancelOrder = async (req, res) => {
+  try {
+    const { orderId, reason } = req.body;
+    if (!orderId || !reason) {
+      return res.status(400).json({ success: false, message: 'Order ID and reason are required' });
+    }
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    order.status = 'Cancelled';
+    order.cancellationReason = reason;
+    await order.save();
+    res.json({ success: true, message: 'Order cancelled successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to cancel order', error: error.message });
+  }
+};
+
 export {
   placeOrder,
   placeOrderStripe,
@@ -208,4 +230,5 @@ export {
   updateStatus,
 verifyStripe,
   deleteOrder,
+  cancelOrder,
 };

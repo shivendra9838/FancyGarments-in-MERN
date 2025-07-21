@@ -5,14 +5,13 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const UserProfile = () => {
-  const { userData, token, backendUrl, products, currency, addToCart } = useContext(ShopContext);
+  const { userData, token, backendUrl, products, currency, addToCart, wishlist, removeFromWishlist } = useContext(ShopContext);
   const [profileImage, setProfileImage] = useState('');
   const [previewImage, setPreviewImage] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
-  const [wishlist, setWishlist] = useState([]); 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -97,36 +96,17 @@ const UserProfile = () => {
     fetchOrders();
   }, [token, backendUrl]);
 
-  // Wishlist/Recently Viewed: load from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('wishlist');
-    if (stored) setWishlist(JSON.parse(stored));
-  }, []);
-  const handleRemoveWishlist = async (id, video) => {
-    setWishlist(prev => {
-      const updated = prev.filter(item => item._id !== id && item.id !== id);
-      localStorage.setItem('wishlist', JSON.stringify(updated));
-      return updated;
-    });
-    // Backend sync
-    if (token) {
-      try {
-        await axios.post(
-          `${backendUrl}/api/wishlist/remove`,
-          { productId: id, video },
-          { headers: { token } }
-        );
-      } catch (err) {
-        // Optionally show a toast or log error
-      }
-    }
+  const handleRemoveWishlist = (id) => {
+    removeFromWishlist(id);
   };
 
   // Dummy wishlist/recently viewed (pick 3 random products)
   useEffect(() => {
     if (products && products.length > 0) {
       const shuffled = [...products].sort(() => 0.5 - Math.random());
-      setWishlist(shuffled.slice(0, 3));
+      // The original code had a local wishlist state, but it's now managed by ShopContext.
+      // This useEffect is no longer needed for local wishlist management.
+      // It can be removed if not used elsewhere.
     }
   }, [products]);
 
@@ -378,7 +358,7 @@ const UserProfile = () => {
   function NotificationsSection() {
     const [notifications, setNotifications] = React.useState([
       { id: 1, type: 'offer', text: '🎉 Independence Day Offer: Use code FREEDOM30 for 30% off!', read: false },
-      { id: 2, type: 'order', text: '📦 Your order #123456 has been shipped!', read: false },
+      { id: 2, type: 'order', text: '�� Your order #123456 has been shipped!', read: false },
       { id: 3, type: 'wishlist', text: '💖 Price drop: “Cotton Top” in your wishlist is now ₹299!', read: false },
     ]);
     const markRead = (id) => setNotifications(n => n.map(notif => notif.id === id ? { ...notif, read: true } : notif));
@@ -774,12 +754,12 @@ const UserProfile = () => {
                 wishlist.map((item, idx) => (
                   <Link
                     key={idx}
-                    to={`/product/${item._id}`}
+                    to={`/product/${item.productId}`}
                     className="bg-gradient-to-br from-pink-50 via-white to-pink-100 dark:from-gray-700 dark:to-gray-800 rounded-xl shadow-lg p-4 flex flex-col items-center w-44 transition-transform hover:scale-105 hover:shadow-2xl duration-200 border-b-4 border-pink-200 cursor-pointer group"
                     style={{ textDecoration: 'none' }}
                   >
                     <img
-                      src={item.images && item.images[0] ? item.images[0] : 'https://placehold.co/80x80?text=No+Image'}
+                      src={item.image ? (item.image.startsWith('http') ? item.image : `${backendUrl}/uploads/${item.image}`) : 'https://placehold.co/80x80?text=No+Image'}
                       alt={item.name}
                       className="w-20 h-20 object-cover rounded mb-2 border shadow group-hover:opacity-80"
                     />
@@ -788,7 +768,7 @@ const UserProfile = () => {
                     <div className="flex gap-2 mt-2">
                       <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded text-xs font-semibold">View</span>
                       <button
-                        onClick={e => { e.preventDefault(); handleRemoveWishlist(item._id, item.video); }}
+                        onClick={e => { e.preventDefault(); handleRemoveWishlist(item._id); }}
                         className="bg-pink-100 text-pink-700 px-3 py-1 rounded text-xs font-semibold hover:bg-pink-200 transition"
                       >Remove</button>
                     </div>
