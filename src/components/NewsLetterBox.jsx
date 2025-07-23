@@ -29,7 +29,7 @@ const NewsLetterBox = () => {
           🎉😀Thank you for subscribing! You’ll receive the latest updates soon.
         </p>
       ) : (
-        <form onSubmit={onSubmitHandler} className='w-1/2 flex items-center mx-auto my-6 border pl-3 shadow-md rounded-md'>
+        <form onSubmit={onSubmitHandler} className='w-full sm:w-1/2 flex flex-col sm:flex-row items-center mx-auto my-6 border pl-3 shadow-md rounded-md gap-2'>
           <input
             className='w-full outline-none py-2 px-4 text-gray-700'
             type='email'

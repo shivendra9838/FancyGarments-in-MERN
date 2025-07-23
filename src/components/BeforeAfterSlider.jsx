@@ -10,10 +10,10 @@ const BeforeAfterSlider = () => {
   return (
     <div className="my-12">
       <div className="text-center mb-8">
-        <span className="inline-block text-2xl font-bold mb-2">↔️ Before / After Style</span>
+        <span className="inline-block text-2xl font-bold mb-2">↔ Before / After Style</span>
         <p className="text-gray-500 text-sm">See the transformation! Slide to reveal the Fancy Garments effect.</p>
       </div>
-      <div className="relative w-full max-w-xl mx-auto h-80 rounded-2xl shadow-lg overflow-hidden bg-gray-100">
+      <div className="relative w-full max-w-full md:max-w-xl mx-auto h-60 md:h-80 rounded-2xl shadow-lg overflow-hidden bg-gray-100">
         {/* After (Styled) */}
         <img
           src={afterImg}
@@ -45,4 +45,4 @@ const BeforeAfterSlider = () => {
   );
 };
 
-export default BeforeAfterSlider; 
+export default BeforeAfterSlider;

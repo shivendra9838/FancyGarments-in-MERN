@@ -34,14 +34,14 @@ const ShopByCategory = () => {
   return (
     <div className="my-12">
       <div className="text-center mb-8">
-        <span className="inline-block text-2xl font-bold mb-2">🛍️ Shop by Category</span>
+        <span className="inline-block text-2xl font-bold mb-2">🛍 Shop by Category</span>
         <p className="text-gray-500 text-sm">Explore our key segments and find your style</p>
       </div>
-      <div className="flex flex-wrap justify-center gap-8">
+      <div className="flex flex-wrap justify-center gap-8 gap-y-6">
         {categories.map((cat) => (
           <div
             key={cat.label}
-            className="group cursor-pointer bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center w-48 hover:scale-105 hover:shadow-2xl transition-all border-b-4 border-pink-200"
+            className="group cursor-pointer bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center w-full md:w-48 hover:scale-105 hover:shadow-2xl transition-all border-b-4 border-pink-200"
             onClick={() => navigate(`/collection?category=${encodeURIComponent(cat.value)}`)}
           >
             <span className="text-4xl mb-2">{cat.icon}</span>
@@ -54,4 +54,4 @@ const ShopByCategory = () => {
   );
 };
 
-export default ShopByCategory; 
+export default ShopByCategory;

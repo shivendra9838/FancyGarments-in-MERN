@@ -26,7 +26,7 @@ const GiftCardPromo = () => {
   };
 
   return (
-    <div className="my-12 flex flex-col md:flex-row items-center justify-center gap-8 bg-gradient-to-r from-pink-50 via-yellow-50 to-pink-100 rounded-2xl shadow-lg p-8 border-b-4 border-pink-200">
+    <div className="my-12 flex flex-col md:flex-row items-center justify-center gap-8 gap-y-6 bg-gradient-to-r from-pink-50 via-yellow-50 to-pink-100 rounded-2xl shadow-lg p-8 border-b-4 border-pink-200">
       <div className="mb-4 md:mb-0 md:mr-8 flex items-center justify-center">
         {giftCardIcon}
       </div>
@@ -44,4 +44,4 @@ const GiftCardPromo = () => {
   );
 };
 
-export default GiftCardPromo; 
+export default GiftCardPromo;

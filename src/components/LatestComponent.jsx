@@ -18,7 +18,7 @@ const LatestComponent = () => {
         From attending a casual hangout session with your friends and family to running errands, tees can come in handy for you in varied scenarios. So, check out the wide array of T-shirts that can meet your requirements.
         </p>
       </div>
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4'>
         {
           latestProducts.map((item)=>(
             <ProductItem key={item._id} item={item}/>

@@ -18,7 +18,7 @@ const BestSeller = () => {
         <p className='w-3/4 m-auto text-xs text-gray-600'>
         From attending a casual hangout session with your friends and family to running errands, tees can come in handy for you in varied scenarios. So, check out the wide array of T-shirts that can meet your requirements. You can have a look at the various options with different sleeve lengths, ranging from half sleeves to full sleeves and more. On the other hand.
         </p>
-        <div className='grid grid-cols-5 gap-4 pt-7'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-7'>
             {
                 bestSeller.map((item)=>(
                     <ProductItem key={item._id} item={item} />

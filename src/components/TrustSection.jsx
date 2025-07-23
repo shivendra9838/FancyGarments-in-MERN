@@ -13,7 +13,7 @@ const trustFeatures = [
     desc: 'Free shipping on orders over ₹999.',
   },
   {
-    icon: '🛡️',
+    icon: '🛡',
     title: 'Secure Checkout',
     desc: '100% secure payment with trusted gateways.',
   },
@@ -31,11 +31,11 @@ const TrustSection = () => {
         <span className="inline-block text-2xl font-bold mb-2">📦 Why Shop With Us?</span>
         <p className="text-gray-500 text-sm">Shop confidently with Fancy Garments</p>
       </div>
-      <div className="flex flex-wrap justify-center gap-8">
+      <div className="flex flex-wrap justify-center gap-8 gap-y-6">
         {trustFeatures.map((f, i) => (
           <div
             key={f.title}
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center w-56 hover:scale-105 hover:shadow-2xl transition-all border-b-4 border-green-200"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center w-full md:w-56 hover:scale-105 hover:shadow-2xl transition-all border-b-4 border-green-200"
           >
             <span className="text-4xl mb-2">{f.icon}</span>
             <span className="font-semibold text-lg mb-1">{f.title}</span>
@@ -59,4 +59,4 @@ const TrustSection = () => {
   );
 };
 
-export default TrustSection; 
+export default TrustSection;

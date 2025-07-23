@@ -6,42 +6,42 @@ import { useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 
 const reels = [
-  {
-    id: 1,
-    brand: 'HIGHLANDER',
-    category: 'Trousers',
-    originalPrice: 2699,
-    price: 859,
-    discount: 1840,
-    video: assets.vid1,
-  },
-  {
-    id: 2,
-    brand: 'HIGHLANDER',
-    category: 'Trousers',
-    originalPrice: 3199,
-    price: 1159,
-    discount: 2040,
-    video: assets.vid2,
-  },
-  {
-    id: 3,
-    brand: 'HIGHLANDER',
-    category: 'Trousers',
-    originalPrice: 4399,
-    price: 1249,
-    discount: 3150,
-    video: assets.vid3,
-  },
-  {
-    id: 4,
-    brand: 'HIGHLANDER',
-    category: 'Trousers',
-    originalPrice: 4399,
-    price: 1249,
-    discount: 3150,
-    video: assets.vid4,
-  },
+  {
+    id: 1,
+    brand: 'HIGHLANDER',
+    category: 'Trousers',
+    originalPrice: 2699,
+    price: 859,
+    discount: 1840,
+    video: assets.vid1,
+  },
+  {
+    id: 2,
+    brand: 'HIGHLANDER',
+    category: 'Trousers',
+    originalPrice: 3199,
+    price: 1159,
+    discount: 2040,
+    video: assets.vid2,
+  },
+  {
+    id: 3,
+    brand: 'HIGHLANDER',
+    category: 'Trousers',
+    originalPrice: 4399,
+    price: 1249,
+    discount: 3150,
+    video: assets.vid3,
+  },
+  {
+    id: 4,
+    brand: 'HIGHLANDER',
+    category: 'Trousers',
+    originalPrice: 4399,
+    price: 1249,
+    discount: 3150,
+    video: assets.vid4,
+  },
 ];
 
 const handleRemoveWishlist = async (id, video) => {
@@ -94,69 +94,69 @@ const PromoReels = () => {
     }
   };
 
-  return (
-    <section className="w-screen relative left-1/2 -ml-[50vw] my-16">
-      {/* Heading */}
-      <div className="text-center px-4 lg:px-8 mb-6">
-        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white mb-2">
-          🎥 Exclusive Reels
-        </h2>
-        <p className="text-sm text-gray-500">
-          Tap to shop these styles in motion – real fit, real fashion.
-        </p>
-      </div>
+  return (
+    <section className="w-screen relative left-1/2 -ml-[50vw] my-16">
+      {/* Heading */}
+      <div className="text-center px-4 lg:px-8 mb-6">
+        <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white mb-2">
+          🎥 Exclusive Reels
+        </h2>
+        <p className="text-sm text-gray-500">
+          Tap to shop these styles in motion – real fit, real fashion.
+        </p>
+      </div>
 
-      {/* Horizontal Scroll Section */}
-      <div className="flex overflow-x-auto gap-6 px-4 lg:px-8 scrollbar-hide pb-4">
-        {reels.map((item) => (
-          <div
-            key={item.id}
-            className="min-w-[260px] max-w-[280px] bg-white dark:bg-gray-900 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out flex-shrink-0"
-          >
-            {/* Video Preview */}
-            <div className="relative rounded-t-3xl overflow-hidden h-[320px]">
-              <video
-                src={item.video}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover"
-              />
-              <button
-                aria-label="Add to wishlist"
-                className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-900 px-2 py-1 rounded-full text-sm font-medium"
-                onClick={() => handleAddToWishlist(item)}
-              >
-                ❤️
-              </button>
-            </div>
+      {/* Horizontal Scroll Section */}
+      <div className="flex overflow-x-auto gap-6 px-4 lg:px-8 scrollbar-hide pb-4">
+        {reels.map((item) => (
+          <div
+            key={item.id}
+            className="min-w-full max-w-full md:min-w-[260px] md:max-w-[280px] bg-white dark:bg-gray-900 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 ease-in-out flex-shrink-0"
+          >
+            {/* Video Preview */}
+            <div className="relative rounded-t-3xl overflow-hidden h-[320px]">
+              <video
+                src={item.video}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <button
+                aria-label="Add to wishlist"
+                className="absolute top-3 right-3 bg-white/90 hover:bg-white text-gray-900 px-2 py-1 rounded-full text-sm font-medium"
+                onClick={() => handleAddToWishlist(item)}
+              >
+                ❤
+              </button>
+            </div>
 
-            {/* Product Info */}
-            <div className="p-4 space-y-1">
-              <h3 className="text-base font-semibold text-gray-800 dark:text-white">
-                {item.brand}
-              </h3>
-              <p className="text-sm text-gray-500">{item.category}</p>
+            {/* Product Info */}
+            <div className="p-4 space-y-1">
+              <h3 className="text-base font-semibold text-gray-800 dark:text-white">
+                {item.brand}
+              </h3>
+              <p className="text-sm text-gray-500">{item.category}</p>
 
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-black dark:text-white">
-                  ₹{item.price}
-                </span>
-                <span className="text-sm line-through text-gray-400">
-                  ₹{item.originalPrice}
-                </span>
-              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-black dark:text-white">
+                  ₹{item.price}
+                </span>
+                <span className="text-sm line-through text-gray-400">
+                  ₹{item.originalPrice}
+                </span>
+              </div>
 
-              <p className="text-sm text-orange-600 font-medium">
-                (Rs. {item.discount} OFF)
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+              <p className="text-sm text-orange-600 font-medium">
+                (Rs. {item.discount} OFF)
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 };
 
 export default PromoReels;

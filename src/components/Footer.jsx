@@ -7,7 +7,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';  //styling for icons
 const Footer = () => {
   return (
     <footer className="bg-white py-10">
-      <div className="container mx-auto grid grid-cols-3 gap-8 text-sm">
+      <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-sm px-4">
         {/* Logo and Description */}
         <div>
           <img src={assets.logo} className="mb-5 w-32" alt="Company Logo" />
@@ -113,7 +113,7 @@ const Footer = () => {
         </a>
       </div>
 
-      <div className="mt-8 text-center text-gray-500 text-xs">
+      <div className="mt-8 text-center text-gray-500 text-xs px-2">
         <hr className="mb-4" />
         <p>Copyright © 2025 Fancy Garments - All Rights Reserved</p>
       </div>

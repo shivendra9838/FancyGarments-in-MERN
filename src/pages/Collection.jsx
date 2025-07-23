@@ -321,7 +321,7 @@ const Collection = () => {
               <option value="high-low">Sort By High to Low</option>
             </select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10" id="collection-grid">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10" id="collection-grid">
             {collectionItems.map(item => (
               <ProductItem key={item._id} item={item} />
             ))}

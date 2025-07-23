@@ -7,6 +7,7 @@ import { FaGift, FaHeart } from 'react-icons/fa';
 import { FaSun, FaMoon } from 'react-icons/fa';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 function SaleBanner() {
   const [show, setShow] = useState(() => localStorage.getItem('hideSaleBanner') !== '1');
@@ -32,6 +33,7 @@ const NavBar = () => {
   const dropdownRef = useRef(null)
   const [showGiftCards, setShowGiftCards] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Theme toggle state
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -84,12 +86,20 @@ const NavBar = () => {
 
   return (
     <>
-      <div className='sticky top-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-between py-4 px-8 font-medium shadow-lg'>
+      <div className='sticky top-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-between py-4 px-4 sm:px-8 font-medium shadow-lg'>
         <Link to='/'>
-          <img src={assets.logo} className='w-36' alt='Logo' />
+          <img src={assets.logo} className='w-28 sm:w-36' alt='Logo' />
         </Link>
-
-        <ul className='flex items-center gap-2'>
+        {/* Hamburger for mobile */}
+        <button
+          className='sm:hidden p-2 rounded-full hover:bg-gray-100 transition-colors text-2xl ml-2'
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          aria-label='Open menu'
+        >
+          {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+        {/* Main nav links (hidden on mobile) */}
+        <ul className='hidden sm:flex items-center gap-2'>
           <NavLink to='/' className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100'>
             {t('home')}
           </NavLink>
@@ -117,7 +127,8 @@ const NavBar = () => {
             {t('gift_cards')}
           </button>
         </ul>
-        <div className='flex items-center gap-4 relative'>
+        {/* Controls (always visible, but compact on mobile) */}
+        <div className='flex items-center gap-2 sm:gap-4 relative'>
           {/* Wishlist Icon/Button */}
           <button
             type='button'
@@ -125,7 +136,7 @@ const NavBar = () => {
             className='relative focus:outline-none p-2 rounded-full hover:bg-gray-100 transition-colors'
             title='Wishlist'
           >
-            <FaHeart className='text-2xl text-pink-500 hover:text-pink-600 transition' />
+            <FaHeart className='text-xl sm:text-2xl text-pink-500 hover:text-pink-600 transition' />
             {wishlist.length > 0 && (
               <span className='absolute -top-1 -right-2 bg-pink-500 text-white text-xs rounded-full px-1'>{wishlist.length}</span>
             )}
@@ -179,7 +190,7 @@ const NavBar = () => {
             {theme === 'light' ? <FaMoon className='text-gray-700' /> : <FaSun className='text-yellow-400' />}
           </button>
           {/* Language Toggle */}
-          <div className='flex items-center gap-2'>
+          <div className='hidden sm:flex items-center gap-2'>
             <select
               id='navbar-lang-toggle'
               value={selectedLang}
@@ -225,38 +236,34 @@ const NavBar = () => {
             </p>
           </Link>
         </div>
-        {/* Gift Card Modal/Dropdown */}
-        {showGiftCards && (
-          <div className='absolute left-1/2 top-20 transform -translate-x-1/2 z-50 bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl p-6 w-80 border border-pink-200 animate-fade-in'>
-            <div className='flex flex-col gap-4'>
-              <button
-                onClick={() => { applyGiftCard('WELCOME200'); setShowGiftCards(false); }}
-                className='flex items-center gap-3 bg-gradient-to-r from-pink-400 to-yellow-300 rounded-lg p-4 shadow hover:scale-105 transition'
+      </div>
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className='fixed inset-0 z-40 bg-black/40 flex sm:hidden'>
+          <div className='bg-white dark:bg-gray-900 w-3/4 max-w-xs h-full p-8 flex flex-col gap-6 shadow-lg animate-slideInRight'>
+            <button className='self-end mb-4 text-pink-500 font-bold text-2xl' onClick={() => setMobileMenuOpen(false)}><FaTimes /></button>
+            <NavLink to='/' className='py-2 text-lg font-semibold' onClick={() => setMobileMenuOpen(false)}>{t('home')}</NavLink>
+            <NavLink to='/collection' className='py-2 text-lg font-semibold' onClick={() => setMobileMenuOpen(false)}>{t('collection')}</NavLink>
+            <NavLink to='/about' className='py-2 text-lg font-semibold' onClick={() => setMobileMenuOpen(false)}>{t('about')}</NavLink>
+            <NavLink to='/contact' className='py-2 text-lg font-semibold' onClick={() => setMobileMenuOpen(false)}>{t('contact')}</NavLink>
+            <button onClick={() => { setShowSearch(true); setMobileMenuOpen(false); }} className='py-2 text-lg font-semibold flex items-center gap-2'><img src={assets.search_icon} className='w-5' alt='Search' /> Search</button>
+            <button onClick={() => { setShowGiftCards(true); setMobileMenuOpen(false); }} className='py-2 text-lg font-semibold flex items-center gap-2 text-pink-600'><FaGift className='text-lg' /> {t('gift_cards')}</button>
+            <div className='flex items-center gap-2'>
+              <select
+                id='navbar-lang-toggle-mobile'
+                value={selectedLang}
+                onChange={handleLanguageChange}
+                className='px-2 py-1 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white shadow-sm text-sm w-full'
               >
-                <FaGift className='text-3xl text-pink-600' />
-                <div>
-                  <div className='font-bold text-lg text-pink-700'>Welcome Gift Card</div>
-                  <div className='text-gray-700 text-sm'>₹200 off for new users. Use code: <b>WELCOME200</b></div>
-                </div>
-              </button>
-              <button
-                onClick={() => { applyGiftCard('FIRST10'); setShowGiftCards(false); }}
-                className='flex items-center gap-3 bg-gradient-to-r from-purple-400 to-blue-300 rounded-lg p-4 shadow hover:scale-105 transition'
-              >
-                <FaGift className='text-3xl text-purple-600' />
-                <div>
-                  <div className='font-bold text-lg text-purple-700'>First Order Gift</div>
-                  <div className='text-gray-700 text-sm'>Flat 10% off on your first order. Use code: <b>FIRST10</b></div>
-                </div>
-              </button>
-              <button
-                onClick={() => setShowGiftCards(false)}
-                className='mt-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full font-bold transition'
-              >Close</button>
+                {languageOptions.map(lang => (
+                  <option key={lang.code} value={lang.code}>{lang.label}</option>
+                ))}
+              </select>
             </div>
           </div>
-        )}
-      </div>
+          <div className='flex-1' onClick={() => setMobileMenuOpen(false)}></div>
+        </div>
+      )}
       <SaleBanner />
     </>
   )
