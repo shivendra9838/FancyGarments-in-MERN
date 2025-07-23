@@ -43,7 +43,7 @@ This is a perfect template or starter project for building your own custom onlin
 
 ⚙️ Admin: Product & order management 
 
-Made with ❤️ by Shivendra Tiwari
+Made with ❤️ by Shivendra Tiwari 
 
 
 # React + Vite
