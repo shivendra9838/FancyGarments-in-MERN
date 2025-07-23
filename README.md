@@ -16,7 +16,8 @@
 
 
 
-👗 Fancy Garments – MERN Stack E-Commerce Website
+
+👗 #Fancy Garments – MERN Stack E-Commerce Website free for everyone
 Fancy Garments is a full-featured clothing e-commerce web application built using the MERN Stack (MongoDB, Express.js, React.js, Node.js). It includes all the essential features of a modern online store: user authentication, shopping cart, order tracking, PDF invoices, secure payments, and more.
 
 📖 About
