@@ -6,7 +6,9 @@ import { assets } from '../assets/assets';
 import CartTotal from '../components/CartTotal';
 import { Link } from 'react-router-dom';
 
+
 const Cart = () => {
+ 
   const { products, currency, cartItems, updateQuantity } = useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
   useEffect(() => {

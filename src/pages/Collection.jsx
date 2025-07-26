@@ -277,7 +277,7 @@ const Collection = () => {
         {/* Mobile Filters Drawer - unchanged */}
         {showMobileFilters && (
           <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-end">
-            <div className="w-3/4 max-w-xs bg-white h-full p-6 shadow-lg flex flex-col gap-6 animate-slideInRight">
+            <div className="w-3/4 max-w-xs bg-white h-full p-6 shadow-lg flex flex-col gap-6 animate-in slide-in-from-right duration-300">
               <button className="self-end mb-4 text-pink-500 font-bold text-lg" onClick={() => setShowMobileFilters(false)}>&times; Close</button>
               <div>
                 <p className="mb-3 text-sm font-medium">CATEGORIES</p>
@@ -321,7 +321,7 @@ const Collection = () => {
               <option value="high-low">Sort By High to Low</option>
             </select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10" id="collection-grid">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-10 px-2 sm:px-0" id="collection-grid">
             {collectionItems.map(item => (
               <ProductItem key={item._id} item={item} />
             ))}

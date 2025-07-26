@@ -5,6 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
+
 const showMessage = keyframes`
   0% {
     opacity: 0;
@@ -79,6 +80,8 @@ const Button = styled.button`
 `;
 
 const AuthForm = () => {
+ 
+
   const [currentState, setCurrentState] = useState('Login');
   const { token, setToken, backendUrl } = useContext(ShopContext);
   const navigate = useNavigate();

@@ -4,7 +4,9 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+
 const UserProfile = () => {
+  
   const { userData, token, backendUrl, products, currency, addToCart, wishlist, removeFromWishlist } = useContext(ShopContext);
   const [profileImage, setProfileImage] = useState('');
   const [previewImage, setPreviewImage] = useState('');
@@ -644,7 +646,7 @@ const UserProfile = () => {
               <p className="text-gray-500 text-xs">Total Spent</p>
             </div>
             <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-6 shadow flex flex-col items-center transition-transform hover:scale-105 hover:shadow-xl duration-200 border-t-4 border-green-400">
-              <span className="text-4xl mb-2 animate-spin-slow">❤️</span>
+              <span className="text-4xl mb-2 animate-spin">❤️</span>
               <p className="text-lg font-bold">{wishlistCount}</p>
               <p className="text-gray-500 text-xs">Wishlist Items</p>
             </div>

@@ -6,6 +6,7 @@ import aboutImg from '../assets/photo.png';
 import abdul from '../assets/abdul.jpg';
 import ishaan from '../assets/ishaan.jpg';
 import yash from '../assets/yash.jpg';
+import { ToastContainer } from 'react-toastify';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaUserFriends, FaInstagram, FaFacebook, FaTwitter, FaBriefcase, FaClock, FaCopy, FaWhatsapp, FaCheckCircle, FaTimesCircle, FaLocationArrow, FaQuestionCircle, FaMoneyBillWave, FaUndo, FaEdit, FaHeadset, FaShippingFast, FaDirections, FaShoppingBag, FaTruck, FaGift, FaExclamationTriangle, FaStar } from 'react-icons/fa';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
@@ -13,6 +14,9 @@ import 'leaflet/dist/leaflet.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import Tooltip from 'rc-tooltip';
 import 'rc-tooltip/assets/bootstrap.css';
+import { useEffect } from 'react';
+import axios from 'axios';
+
 
 // Fix default marker icon for leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -95,7 +99,7 @@ function FloatingChatButton() {
       href="https://wa.me/918318407559"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center w-16 h-16 text-4xl animate-bounce-slow transition-all"
+      className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center w-16 h-16 text-4xl animate-bounce transition-all"
       title="Chat with us on WhatsApp"
     >
       <FaWhatsapp />
@@ -107,7 +111,7 @@ const languages = [
   { code: 'en', label: 'English' },
   { code: 'hi', label: 'हिन्दी' },
   { code: 'bn', label: 'বাংলা' },
-  { code: 'mr', label: 'মराठी' },
+  { code: 'mr', label: 'মরाठी' },
 ];
 
 function ReviewForm() {
@@ -284,20 +288,115 @@ const Contact = () => {
     { icon: <FaWhatsapp />, color: 'text-green-500', url: 'https://wa.me/918318407559', label: 'WhatsApp' },
   ];
 
-  const supportAgents = [
-    {
-      name: 'Riya',
-      avatar: abdul,
-      status: 'Response time: ~1hr',
-      online: false,
-    },
-    {
-      name: 'Aman',
-      avatar: ishaan,
-      status: 'Available now',
-      online: true,
-    },
-  ];
+ const supportAgents = [
+  {
+    name: 'Shivendra',
+    avatar: aboutImg,
+    status: 'Response time: ~1hr',
+    online: false,
+  },
+  {
+    name: 'Aman',
+    avatar: ishaan,
+    status: 'Available now',
+    online: true,
+  },
+];
+
+const [selectedAgent, setSelectedAgent] = useState(null);
+const [showModal, setShowModal] = useState(false);
+const [messages, setMessages] = useState([]);
+const [input, setInput] = useState('');
+const chatRef = useRef(null);
+
+const handleAgentClick = (agent) => {
+  setSelectedAgent(agent);
+  setShowModal(true);
+  setMessages([
+    { sender: 'bot', text: `Hi! I'm ${agent.name}, your AI assistant. How can I help?` },
+  ]);
+};
+
+const handleSend = async () => {
+  if (!input.trim()) return;
+
+  const userMessage = { sender: 'user', text: input };
+  const updatedMessages = [...messages, userMessage];
+
+  setMessages(updatedMessages);
+  setInput('');
+
+  try {
+    const res = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: `You are a helpful support agent named ${selectedAgent.name}.` },
+          ...updatedMessages.map((msg) => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.text,
+          })),
+        ],
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          // Fix: Remove any accidental whitespace and ensure the key is present
+          Authorization: `Bearer ${String(import.meta.env.VITE_OPENAI_KEY || '').trim()}`,
+        },
+      }
+    );
+
+    const botText = res.data.choices[0].message.content;
+    const botMessage = { sender: 'bot', text: botText };
+    setMessages((prev) => [...prev, botMessage]);
+  } catch (err) {
+    // Enhanced error logging for debugging
+    console.error('OpenAI API Error:', err);
+
+    // Check if the API key is missing or empty
+    if (!String(import.meta.env.VITE_OPENAI_KEY || '').trim()) {
+      console.warn('VITE_OPENAI_KEY is not set in your .env file or is empty.');
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: 'OpenAI API key is missing. Please check your .env file, ensure VITE_OPENAI_KEY is set, and restart the server.' }
+      ]);
+      return;
+    }
+
+    if (err.response) {
+      console.error('Response data:', err.response.data);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: `Sorry, something went wrong: ${err.response.data.error?.message || 'Unknown error.'}` }
+      ]);
+    } else if (err.request) {
+      console.error('No response received:', err.request);
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: 'Sorry, no response from server. Please check your network or API key.' }
+      ]);
+    } else {
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: `Sorry, something went wrong: ${err.message}` }
+      ]);
+    }
+    // Optionally, check if API key is present
+    if (!import.meta.env.VITE_OPENAI_KEY) {
+      console.warn('VITE_OPENAI_KEY is not set in your environment variables.');
+    }
+  }
+};
+
+
+useEffect(() => {
+  if (chatRef.current) {
+    chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }
+}, [messages]);
+
 
   return (
     <div className="bg-gray-50">
@@ -359,7 +458,7 @@ const Contact = () => {
             <p className="text-gray-600 text-center">Order inquiries, returns, or assistance.<br />We’re here to help!</p>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center gap-3 border-t-4 border-indigo-500">
-            <FaClock className="text-3xl text-indigo-500 mb-2 animate-spin-slow" />
+            <FaClock className="text-3xl text-indigo-500 mb-2 animate-spin" />
             <h3 className="font-bold text-lg">Working Hours</h3>
             <ul className="text-gray-600 text-center text-sm">
               {workingHours.map((wh, i) => (
@@ -423,19 +522,101 @@ const Contact = () => {
       </section>
 
       {/* Team Member Spotlight Section */}
-      <section className="max-w-2xl mx-auto px-4 mb-12">
-        <div className="text-2xl text-center font-bold mb-4">Meet Our Support Team</div>
-        <div className="flex flex-wrap justify-center gap-8">
-          {supportAgents.map((agent, idx) => (
-            <div key={idx} className="flex flex-col items-center bg-white rounded-xl shadow-lg p-4 w-48">
-              <img src={agent.avatar} alt={agent.name} className="w-16 h-16 rounded-full object-cover border-2 border-blue-400 mb-2" />
-              <span className="font-semibold text-lg">{agent.name}</span>
-              <span className={`text-xs mt-1 ${agent.online ? 'text-green-600 font-bold' : 'text-gray-500'}`}>{agent.status}</span>
-              {agent.online && <span className="mt-1 text-green-500 text-xs">● Online</span>}
-            </div>
-          ))}
+      <section className="max-w-4xl mx-auto px-4 mb-20">
+  <div className="text-3xl text-center font-bold mb-6 text-gray-800 dark:text-white">Meet Our Support Team</div>
+  <div className="flex flex-wrap justify-center gap-8">
+    {supportAgents.map((agent, idx) => (
+      <div
+        key={idx}
+        onClick={() => handleAgentClick(agent)}
+        className="cursor-pointer group transition duration-300 transform hover:-translate-y-1 hover:shadow-2xl bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-2xl p-5 w-52 text-center"
+      >
+        <div className="relative mb-3">
+          <img
+            src={agent.avatar}
+            alt={agent.name}
+            title={agent.status}
+            className="w-20 h-20 mx-auto rounded-full border-4 border-blue-400 shadow-lg group-hover:scale-105 transition-transform duration-200"
+          />
+          {agent.online && (
+            <span className="absolute bottom-1 right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+          )}
         </div>
-      </section>
+        <h3 className="font-semibold text-lg text-gray-800 dark:text-white">{agent.name}</h3>
+        <p className={`text-sm ${agent.online ? 'text-green-600' : 'text-gray-500'}`}>{agent.status}</p>
+        {agent.online && <p className="text-xs mt-1 text-green-500 font-semibold">● Online</p>}
+      </div>
+    ))}
+  </div>
+</section>
+
+
+
+{showModal && selectedAgent && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-4 relative">
+      <button
+        className="absolute top-2 right-2 text-gray-500 hover:text-red-600"
+        onClick={() => setShowModal(false)}
+      >
+        ✕
+      </button>
+      <div className="flex items-center gap-4 mb-4">
+        <img
+          src={selectedAgent.avatar}
+          alt={selectedAgent.name}
+          className="w-12 h-12 rounded-full border-2 border-blue-500"
+        />
+        <div>
+          <h4 className="text-lg font-semibold text-gray-800 dark:text-white">{selectedAgent.name}</h4>
+          <p className="text-sm text-gray-500">{selectedAgent.status}</p>
+        </div>
+      </div>
+
+      {/* Message Container */}
+      <div
+        ref={chatRef}
+        className="h-64 overflow-y-auto bg-gray-100 dark:bg-gray-700 rounded-lg p-3 space-y-2 mb-3"
+      >
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`px-4 py-2 rounded-lg max-w-xs ${
+                msg.sender === 'user'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white'
+              }`}
+            >
+              {msg.text}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input & Send */}
+      <div className="flex gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          type="text"
+          placeholder="Type a message..."
+          className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        />
+        <button
+          onClick={handleSend}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Customer Support Info Section */}
       <section className="max-w-4xl mx-auto px-4 mb-12">

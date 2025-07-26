@@ -16,13 +16,8 @@ const GiftCardPromo = () => {
 
   const handleSendGiftCard = (e) => {
     e.preventDefault();
-    // Scroll to or navigate to the gift card section (could be a modal or a page)
-    // For now, navigate to /giftcards or scroll to #giftcards
-    if (document.getElementById('giftcards-section')) {
-      document.getElementById('giftcards-section').scrollIntoView({ behavior: 'smooth' });
-    } else {
-      navigate('/#giftcards');
-    }
+    // Navigate to profile page where gift cards are managed
+    navigate('/profile');
   };
 
   return (
