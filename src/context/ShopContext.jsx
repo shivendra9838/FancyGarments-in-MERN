@@ -28,13 +28,32 @@ const ShopContextProvider = (props) => {
       return;
     }
 
-    if (userData) {
+    if (!userData) {
+      toast.error('You must be logged in to apply a gift card.');
+      return;
+    }
+
+    // Predefined gift card codes
+    const giftCardCodes = {
+      'WELCOME200': { discount: 20, message: 'Welcome gift card applied!' },
+      'FIRST10': { discount: 10, message: 'First purchase discount applied!' },
+      'FREEDOM30': { discount: 30, message: 'Independence Day special discount applied!' },
+      'SAVE15': { discount: 15, message: 'Save 15% discount applied!' },
+      'HOLIDAY25': { discount: 25, message: 'Holiday special discount applied!' }
+    };
+
+    const upperCode = code.toUpperCase().trim();
+    
+    if (giftCardCodes[upperCode]) {
+      const { discount, message } = giftCardCodes[upperCode];
+      setGiftCard({ code: upperCode, discount });
+      toast.success(message);
+    } else {
+      // For other codes, use the existing logic
       const isNewUser = new Date(userData.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const discount = isNewUser ? 20 : 10;
-      setGiftCard({ code, discount });
+      setGiftCard({ code: upperCode, discount });
       toast.success(`Applied ${discount}% discount!`);
-    } else {
-      toast.error('You must be logged in to apply a gift card.');
     }
   };
 

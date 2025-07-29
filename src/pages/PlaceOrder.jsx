@@ -9,12 +9,14 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { CheckCircle } from 'lucide-react';
 
+
 const PlaceOrder = () => {
   const { cartItems, getCartAmount, delivery_fee, products, token, backendUrl, clearCart } = useContext(ShopContext);
   const [method, setMethod] = useState('cod');
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
   const navigate = useNavigate();
+  
 
   const totalAmount = getCartAmount() + delivery_fee;
 

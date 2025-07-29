@@ -5,12 +5,14 @@ import { assets } from "../assets/assets";
 import Title from "../components/Title";
 import RelatedProducts from "../components/RelatedProducts";
 
+
 const Product = () => {
   const { productId } = useParams();
   const { products, currency, addToCart } = useContext(ShopContext);
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
+  
 
   useEffect(() => {
     const product = products.find((item) => item._id === productId);
@@ -20,6 +22,7 @@ const Product = () => {
       window.scrollTo(0, 0);
     }
   }, [productId, products]);
+
 
   if (!productData) {
     return <div>Loading...</div>;

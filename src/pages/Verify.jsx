@@ -6,6 +6,7 @@ import { ShopContext } from "../context/ShopContext";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 
+
 const Verify = () => {
   const { token, backendUrl } = useContext(ShopContext);
   const location = useLocation();
@@ -15,6 +16,7 @@ const Verify = () => {
   const [orderId, setOrderId] = useState("");
   const [amount, setAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("Online");
+  
   
   useEffect(() => {
     const query = new URLSearchParams(location.search);
@@ -69,6 +71,8 @@ const Verify = () => {
 
     verify();
   }, [location.search, token, backendUrl]);
+
+ 
 
   const downloadInvoice = () => {
     const doc = new jsPDF();

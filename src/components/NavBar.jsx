@@ -73,10 +73,18 @@ const NavBar = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
       }
+      // Close gift cards dropdown when clicking outside
+      if (showGiftCards && !event.target.closest('.gift-cards-dropdown')) {
+        setShowGiftCards(false)
+      }
+      // Close wishlist dropdown when clicking outside
+      if (showWishlist && !event.target.closest('.wishlist-dropdown')) {
+        setShowWishlist(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [showGiftCards, showWishlist])
 
   // Add this function to handle gift card application
   function applyGiftCard(code) {
@@ -143,7 +151,7 @@ const NavBar = () => {
           </button>
           {/* Wishlist Modal/Dropdown */}
           {showWishlist && (
-            <div className='absolute right-0 top-14 z-50 bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl p-6 w-80 border border-pink-200 animate-fade-in'>
+            <div className='absolute right-0 top-14 z-50 bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl p-6 w-80 border border-pink-200 wishlist-dropdown animate-in fade-in slide-in-from-top-2 duration-300'>
               <div className='font-bold text-lg text-pink-700 mb-2'>My Wishlist</div>
               {wishlist.length === 0 ? (
                 <div className='text-gray-500 text-center'>No items in your wishlist yet.</div>
@@ -179,6 +187,53 @@ const NavBar = () => {
                 onClick={() => setShowWishlist(false)}
                 className='mt-4 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full font-bold transition w-full'
               >Close</button>
+            </div>
+          )}
+          {/* Gift Cards Modal/Dropdown */}
+          {showGiftCards && (
+            <div className='absolute right-0 top-14 z-50 bg-white/80 backdrop-blur-sm rounded-xl shadow-2xl p-6 w-80 border border-pink-200 gift-cards-dropdown animate-in fade-in slide-in-from-top-2 duration-300'>
+              <div className='font-bold text-lg text-pink-700 mb-4 flex items-center gap-2'>
+                <FaGift className='text-lg' />
+                Gift Cards
+              </div>
+              <div className='space-y-4'>
+                <div className='bg-gradient-to-r from-pink-50 to-yellow-50 rounded-lg p-4 border border-pink-200'>
+                  <h3 className='font-semibold text-pink-700 mb-2'>🎁 Send Gift Cards</h3>
+                  <p className='text-sm text-gray-600 mb-3'>Surprise your loved ones with Fancy Garments gift cards!</p>
+                  <button
+                    onClick={() => { setShowGiftCards(false); navigate('/profile'); }}
+                    className='w-full px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-semibold transition'
+                  >
+                    Send Gift Card
+                  </button>
+                </div>
+                <div className='bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 border border-green-200'>
+                  <h3 className='font-semibold text-green-700 mb-2'>💳 Redeem Gift Card</h3>
+                  <p className='text-sm text-gray-600 mb-3'>Have a gift card? Apply it to your cart!</p>
+                  <button
+                    onClick={() => { setShowGiftCards(false); navigate('/cart'); }}
+                    className='w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition'
+                  >
+                    Apply to Cart
+                  </button>
+                </div>
+                <div className='bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200'>
+                  <h3 className='font-semibold text-purple-700 mb-2'>📊 Check Balance</h3>
+                  <p className='text-sm text-gray-600 mb-3'>Check your gift card balance and history</p>
+                  <button
+                    onClick={() => { setShowGiftCards(false); navigate('/profile'); }}
+                    className='w-full px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold transition'
+                  >
+                    View Balance
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGiftCards(false)}
+                className='mt-4 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-full font-bold transition w-full'
+              >
+                Close
+              </button>
             </div>
           )}
           {/* Theme Toggle */}
@@ -240,7 +295,7 @@ const NavBar = () => {
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
         <div className='fixed inset-0 z-40 bg-black/40 flex sm:hidden'>
-          <div className='bg-white dark:bg-gray-900 w-3/4 max-w-xs h-full p-8 flex flex-col gap-6 shadow-lg animate-slideInRight'>
+          <div className='bg-white dark:bg-gray-900 w-3/4 max-w-xs h-full p-8 flex flex-col gap-6 shadow-lg animate-in slide-in-from-right duration-300'>
             <button className='self-end mb-4 text-pink-500 font-bold text-2xl' onClick={() => setMobileMenuOpen(false)}><FaTimes /></button>
             <NavLink to='/' className='py-2 text-lg font-semibold' onClick={() => setMobileMenuOpen(false)}>{t('home')}</NavLink>
             <NavLink to='/collection' className='py-2 text-lg font-semibold' onClick={() => setMobileMenuOpen(false)}>{t('collection')}</NavLink>

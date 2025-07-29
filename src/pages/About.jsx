@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+// import Loader from '../components/Loader';
 import Title from '../components/Title';
 import NewsLetterBox from '../components/NewsLetterBox';
 import { assets } from '../assets/assets';
@@ -13,6 +14,7 @@ import { useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 
 const About = () => {
+ 
   const [showMore, setShowMore] = useState(false);
   // Parallax effect for hero
   const { scrollY } = useScroll();
@@ -73,11 +75,11 @@ const About = () => {
         {/* Attractive background photo overlay */}
         <img src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80" alt="Fashion background" className="absolute inset-0 w-full h-full object-cover opacity-60" />
         {/* Garment-related icons overlay */}
-        <FaTshirt className="absolute left-10 top-10 text-white text-5xl opacity-80 drop-shadow-lg animate-bounce-slow" />
-        <FaShoppingBag className="absolute right-16 top-16 text-pink-200 text-4xl opacity-80 drop-shadow-lg animate-bounce-slower" />
-        <FaStar className="absolute left-1/2 top-6 text-yellow-300 text-3xl opacity-90 drop-shadow-lg animate-spin-slow" />
-        <FaUserTie className="absolute right-10 bottom-10 text-blue-200 text-4xl opacity-80 drop-shadow-lg animate-bounce-slow" />
-        <FaFemale className="absolute left-16 bottom-16 text-pink-300 text-4xl opacity-80 drop-shadow-lg animate-bounce-slower" />
+        <FaTshirt className="absolute left-10 top-10 text-white text-5xl opacity-80 drop-shadow-lg animate-bounce" />
+        <FaShoppingBag className="absolute right-16 top-16 text-pink-200 text-4xl opacity-80 drop-shadow-lg animate-pulse" />
+        <FaStar className="absolute left-1/2 top-6 text-yellow-300 text-3xl opacity-90 drop-shadow-lg animate-spin" />
+        <FaUserTie className="absolute right-10 bottom-10 text-blue-200 text-4xl opacity-80 drop-shadow-lg animate-bounce" />
+        <FaFemale className="absolute left-16 bottom-16 text-pink-300 text-4xl opacity-80 drop-shadow-lg animate-pulse" />
         {/* Existing overlay */}
         <div className="relative z-10 text-center text-white">
           <motion.h1 initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1 }} className="text-4xl md:text-6xl font-bold drop-shadow-lg mb-4">

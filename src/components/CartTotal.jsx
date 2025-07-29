@@ -9,6 +9,7 @@ const CartTotal = () => {
   const handleApplyPromo = () => {
     if (promoCode) {
       applyGiftCard(promoCode);
+      setPromoCode(''); // Clear the input after applying
     }
   };
 
@@ -62,7 +63,7 @@ const CartTotal = () => {
             type='text'
             value={promoCode}
             onChange={(e) => setPromoCode(e.target.value)}
-            placeholder='Enter Gift Card'
+            placeholder='Enter Gift Card Code'
             className='flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500'
           />
           <button
@@ -71,6 +72,41 @@ const CartTotal = () => {
           >
             Apply
           </button>
+        </div>
+        <div className='mt-3 text-xs text-gray-500'>
+          <p className='mb-1'>💡 Try these gift card codes:</p>
+          <div className='flex flex-wrap gap-2'>
+            <button 
+              onClick={() => { setPromoCode('WELCOME200'); applyGiftCard('WELCOME200'); setPromoCode(''); }}
+              className='bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs hover:bg-pink-200 transition cursor-pointer'
+            >
+              WELCOME200
+            </button>
+            <button 
+              onClick={() => { setPromoCode('FIRST10'); applyGiftCard('FIRST10'); setPromoCode(''); }}
+              className='bg-green-100 text-green-700 px-2 py-1 rounded text-xs hover:bg-green-200 transition cursor-pointer'
+            >
+              FIRST10
+            </button>
+            <button 
+              onClick={() => { setPromoCode('FREEDOM30'); applyGiftCard('FREEDOM30'); setPromoCode(''); }}
+              className='bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs hover:bg-blue-200 transition cursor-pointer'
+            >
+              FREEDOM30
+            </button>
+            <button 
+              onClick={() => { setPromoCode('SAVE15'); applyGiftCard('SAVE15'); setPromoCode(''); }}
+              className='bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs hover:bg-purple-200 transition cursor-pointer'
+            >
+              SAVE15
+            </button>
+            <button 
+              onClick={() => { setPromoCode('HOLIDAY25'); applyGiftCard('HOLIDAY25'); setPromoCode(''); }}
+              className='bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs hover:bg-yellow-200 transition cursor-pointer'
+            >
+              HOLIDAY25
+            </button>
+          </div>
         </div>
       </div>
     </div>

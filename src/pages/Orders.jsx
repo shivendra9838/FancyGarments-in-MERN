@@ -1,8 +1,8 @@
 
-
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { ShopContext } from '../context/ShopContext';
+import { assets } from "../assets/assets";
 import { toast } from 'react-toastify';
 import Title from '../components/Title';
 import html2pdf from 'html2pdf.js';
@@ -18,6 +18,7 @@ const Orders = () => {
   const [trackingOrder, setTrackingOrder] = useState(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
 
   useEffect(() => {
     const loadOrderData = async () => {
@@ -49,10 +50,11 @@ const Orders = () => {
     loadOrderData();
   }, [token, backendUrl]);
 
+
   const handlePayment = async (order) => {
     try {
-      const { data } = await axios.post(`${backendUrl}/api/order/stripe`, 
-        { cartItems: order.items, address: order.address }, 
+      const { data } = await axios.post(`${backendUrl}/api/order/stripe`,
+        { cartItems: order.items, address: order.address },
         { headers: { token } }
       );
       if (data.success) {
@@ -95,46 +97,44 @@ const Orders = () => {
   };
 
   const renderProgress = (status) => {
-  const normalizedStatus = status.toLowerCase();
+    const normalizedStatus = status.toLowerCase();
 
-  let currentIndex = 0;
+    let currentIndex = 0;
 
-  switch (normalizedStatus) {
-    case 'pending':
-    case 'shipped':
-      currentIndex = 0;
-      break;
-    case 'out for delivery':
-      currentIndex = 1;
-      break;
-    case 'delivered':
-      currentIndex = 2;
-      break;
-    default:
-      currentIndex = 0;
-  }
+    switch (normalizedStatus) {
+      case 'pending':
+      case 'shipped':
+        currentIndex = 0;
+        break;
+      case 'out for delivery':
+        currentIndex = 1;
+        break;
+      case 'delivered':
+        currentIndex = 2;
+        break;
+      default:
+        currentIndex = 0;
+    }
 
-  return (
-    <div className="flex items-center justify-center gap-4 mt-4">
-      {[0, 1, 2].map((idx) => (
-        <div key={idx} className="flex items-center">
-          <div
-            className={`w-4 h-4 rounded-full transition-colors duration-300 ${
-              idx <= currentIndex ? 'bg-green-500' : 'bg-gray-300'
-            }`}
-          ></div>
-          {idx < 2 && (
+    return (
+      <div className="flex items-center justify-center gap-4 mt-4">
+        {[0, 1, 2].map((idx) => (
+          <div key={idx} className="flex items-center">
             <div
-              className={`w-10 h-1 transition-colors duration-300 ${
-                idx < currentIndex ? 'bg-green-500' : 'bg-gray-300'
-              }`}
+              className={`w-4 h-4 rounded-full transition-colors duration-300 ${idx <= currentIndex ? 'bg-green-500' : 'bg-gray-300'
+                }`}
             ></div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
+            {idx < 2 && (
+              <div
+                className={`w-10 h-1 transition-colors duration-300 ${idx < currentIndex ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+              ></div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
 
   const downloadInvoice = (order) => {
@@ -242,11 +242,20 @@ const Orders = () => {
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <Title text1="My" text2="Orders" />
       {orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <img src="https://cdn.dribbble.com/users/2046015/screenshots/6012385/no_orders.png" alt="No Orders" className="w-48 h-48 mb-6 opacity-80" />
-          <p className="text-lg text-gray-500 font-semibold">You have no orders yet.</p>
-          <p className="text-sm text-gray-400 mt-2">Looks like you haven't placed any orders with us.</p>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+          <img
+            src={assets.order}
+            alt="No Orders"
+            className="w-full max-w-[350px] md:max-w-[400px] h-auto mb-6 opacity-90 object-contain"
+          />
+          <p className="text-xl md:text-2xl text-gray-600 font-semibold">
+            You have no orders yet.
+          </p>
+          <p className="text-sm md:text-base text-gray-400 mt-2">
+            Looks like you haven't placed any orders with us.
+          </p>
         </div>
+
       ) : (
         <div className="space-y-8">
           {orders.map((order, index) => {

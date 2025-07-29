@@ -4,7 +4,9 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+
 const UserProfile = () => {
+  
   const { userData, token, backendUrl, products, currency, addToCart, wishlist, removeFromWishlist } = useContext(ShopContext);
   const [profileImage, setProfileImage] = useState('');
   const [previewImage, setPreviewImage] = useState('');
@@ -535,10 +537,15 @@ const UserProfile = () => {
           <div className="flex flex-col md:flex-row items-center gap-8 mb-12 border-b pb-8">
             <div className="relative">
               <img
-                src={previewImage || profileImage || "https://via.placeholder.com/120"}
-                alt="Profile"
-                className="w-28 h-28 rounded-full object-cover border-4 border-indigo-200 dark:border-gray-700 shadow-lg"
-              />
+  src={
+    previewImage ||
+    profileImage ||
+    "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" // A realistic person avatar
+  }
+  alt="Profile"
+  className="w-28 h-28 rounded-full object-cover border-4 border-indigo-200 dark:border-gray-700 shadow-lg"
+/>
+
               <label className="absolute bottom-0 right-0 bg-white dark:bg-gray-700 p-1 rounded-full shadow cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                 <svg className="w-5 h-5 text-gray-600 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -644,7 +651,7 @@ const UserProfile = () => {
               <p className="text-gray-500 text-xs">Total Spent</p>
             </div>
             <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-6 shadow flex flex-col items-center transition-transform hover:scale-105 hover:shadow-xl duration-200 border-t-4 border-green-400">
-              <span className="text-4xl mb-2 animate-spin-slow">❤️</span>
+              <span className="text-4xl mb-2 animate-spin">❤️</span>
               <p className="text-lg font-bold">{wishlistCount}</p>
               <p className="text-gray-500 text-xs">Wishlist Items</p>
             </div>
