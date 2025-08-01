@@ -1,5 +1,4 @@
 import React from 'react';
-import { assets } from '../assets/assets';
 
 const trustFeatures = [
   {
@@ -32,7 +31,7 @@ const TrustSection = () => {
         <p className="text-gray-500 text-sm">Shop confidently with Fancy Garments</p>
       </div>
       <div className="flex flex-wrap justify-center gap-8 gap-y-6">
-        {trustFeatures.map((f, i) => (
+        {trustFeatures.map((f) => (
           <div
             key={f.title}
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center w-full md:w-56 hover:scale-105 hover:shadow-2xl transition-all border-b-4 border-green-200"
@@ -43,18 +42,6 @@ const TrustSection = () => {
           </div>
         ))}
       </div>
-      {/* Live Chat Widget (floating button) */}
-      <a
-        href="https://wa.me/918318407559"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg p-4 flex items-center gap-2 animate-bounce"
-        title="Chat with us on WhatsApp"
-        style={{ boxShadow: '0 4px 24px 0 #22c55e55' }}
-      >
-        <span className="text-2xl">💬</span>
-        <span className="font-bold hidden md:inline">Live Chat</span>
-      </a>
     </div>
   );
 };

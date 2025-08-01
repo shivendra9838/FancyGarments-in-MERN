@@ -16,6 +16,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify';
 import UserProfile from './pages/UserProfile';
+import ChatBot from './components/ChatBot';
 
 const App = () => {
 
@@ -39,6 +40,7 @@ const App = () => {
 			<Route path='/profile' element={<UserProfile />} />
 		</Routes>
 		<Footer/>
+		<ChatBot />
     </div>
   )
 }

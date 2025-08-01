@@ -55,6 +55,7 @@ import p_img51 from './p_img51.png'
 import p_img52 from './p_img52.png'
 import top from './top.png'
 import top1 from './top1.png'
+import chatbot from './chatbot.png'
 import order from './order.png'
 import short from './short.png'
 import dress from './dress.png'
@@ -163,6 +164,7 @@ export const assets = {
     p_img52,
     top,
     top1,
+    chatbot,
     order,
     short,
     dress,
