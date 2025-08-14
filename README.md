@@ -410,10 +410,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 📞 Contact
 
 **Shivendra Tiwari**
-- 📧 Email: [your-email@example.com]
+- 📧 Email: [tiwarishivendra589@gmail.com]
 - 🐙 GitHub: [@shivendra9838](https://github.com/shivendra9838)
-- 💼 LinkedIn: [Your LinkedIn Profile]
-- 🌐 Portfolio: [Your Portfolio Website]
+- 💼 LinkedIn: [https://www.linkedin.com/in/shivendra-tiwari-63ab1524a/]
+- 🌐 Portfolio: [...]
 
 ---
 
