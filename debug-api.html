@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <button onclick="testAPI()">Test Backend Connection</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            const backendUrl = 'https://fancygarments-in-mern.onrender.com';
+            
+            try {
+                // Test basic connection
+                resultDiv.innerHTML = '<p>Testing connection...</p>';
+                
+                const response = await fetch(`${backendUrl}/`);
+                const text = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <h3>✅ Backend Connection: SUCCESS</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong> ${text}</p>
+                `;
+                
+                // Test products endpoint
+                const productsResponse = await fetch(`${backendUrl}/api/product/list`);
+                const productsData = await productsResponse.json();
+                
+                resultDiv.innerHTML += `
+                    <h3>✅ Products API: SUCCESS</h3>
+                    <p><strong>Products Count:</strong> ${productsData.products ? productsData.products.length : 'N/A'}</p>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>❌ Backend Connection: FAILED</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
