@@ -235,10 +235,11 @@ const Orders = ({ token }) => {
                 >
                   Download Invoice
                 </button>
-                {order.cancellationReason && (
-                  <p className="text-xs text-red-600 mt-2">
-                    <strong>Reason:</strong> {order.cancellationReason}
-                  </p>
+                {order.status === 'Cancelled' && (
+                  <div className="text-xs text-red-600 mt-2 p-2 bg-red-50 rounded border border-red-100 w-full">
+                    <p><strong>Reason:</strong> {order.cancellationReason}</p>
+                    <p><strong>Refund:</strong> {order.refundStatus || 'Not Applicable'}</p>
+                  </div>
                 )}
               </div>
             </div>

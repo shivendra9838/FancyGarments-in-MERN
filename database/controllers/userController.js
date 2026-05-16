@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 import userModel from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import path from 'path';
+import transporter from '../config/nodemailer.js';
+import otpModel from '../models/otpModel.js';
+import { generateEmailTemplate } from '../utils/emailTemplate.js';
+
+const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' }); // set token expiration
@@ -17,14 +22,50 @@ const loginUser = async (req, res) => {
             return res.json({ success: false, message: "User not found" });
         }
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            const token = createToken(user._id);
-            res.json({ success: true,  token });
+        if (isMatch) {
+            const otp = generateOtp();
+            await otpModel.deleteMany({ email }); // Clear old OTPs
+            await otpModel.create({ email, otp });
+            
+            // Send OTP email
+            const mailOptions = {
+                from: process.env.MAIL_FROM,
+                to: email,
+                subject: 'Your Login OTP - Fancy Garments',
+                html: generateEmailTemplate(user.name, otp, 'Login')
+            };
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) console.log("Error sending OTP email:", error);
+            });
+
+            res.json({ success: true, message: "OTP sent to your email", isOtpRequired: true });
         }
         else {
             return res.json({ success: false, message: "Invalid credentials" });
         }
     }catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+// Verify Login OTP
+const verifyLoginOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const otpRecord = await otpModel.findOne({ email, otp });
+        if (!otpRecord) {
+            return res.json({ success: false, message: "Invalid or expired OTP" });
+        }
+
+        const user = await userModel.findOne({ email });
+        if (!user) return res.json({ success: false, message: "User not found" });
+
+        await otpModel.deleteOne({ _id: otpRecord._id });
+        const token = createToken(user._id);
+
+        res.json({ success: true, token, message: "Login successful" });
+    } catch (error) {
         console.log(error);
         return res.json({ success: false, message: error.message });
     }
@@ -60,19 +101,93 @@ const registerUser = async (req, res) => {
         if (password.length < 8) {
             return res.json({ success: false, message: "Password must be at least 8 characters long" });
         }
-        // Hash the password
+
+        // Generate and save OTP
+        const otp = generateOtp();
+        await otpModel.deleteMany({ email });
+        await otpModel.create({ email, otp });
+
+        // Send OTP email
+        const mailOptions = {
+            from: process.env.MAIL_FROM,
+            to: email,
+            subject: 'Your Registration OTP - Fancy Garments',
+            html: generateEmailTemplate(name, otp, 'Account Registration')
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) console.log("Error sending registration OTP email:", error);
+        });
+
+        res.json({ success: true, message: "OTP sent to your email", isOtpRequired: true });
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+// Verify Registration OTP
+const verifyRegisterOtp = async (req, res) => {
+    try {
+        const { name, email, password, otp } = req.body;
+        const otpRecord = await otpModel.findOne({ email, otp });
+        if (!otpRecord) {
+            return res.json({ success: false, message: "Invalid or expired OTP" });
+        }
+
+        const exist = await userModel.findOne({ email });
+        if (exist) return res.json({ success: false, message: "User already exists" });
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        // Create and save new user
-        const newUser = new userModel({
-            name,
-            email,
-            password: hashedPassword,
-        });
+        const newUser = new userModel({ name, email, password: hashedPassword });
         const user = await newUser.save();
-        // ✅ Generate token using user._id
+
+        await otpModel.deleteOne({ _id: otpRecord._id });
         const token = createToken(user._id);
-        res.json({ success: true, token });
+
+        // Send welcome email
+        const mailOptions = {
+            from: process.env.MAIL_FROM,
+            to: email,
+            subject: 'Welcome to Fancy Garments',
+            html: generateEmailTemplate(name, 'N/A', 'Welcome to Fancy Garments! You can ignore the OTP field.')
+        };
+        transporter.sendMail(mailOptions);
+
+        res.json({ success: true, token, message: "Registration successful" });
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+// Resend OTP
+const resendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        // Check cooldown
+        const lastOtp = await otpModel.findOne({ email }).sort({ createdAt: -1 });
+        if (lastOtp) {
+            const timeDiff = (Date.now() - lastOtp.createdAt.getTime()) / 1000;
+            if (timeDiff < 30) {
+                return res.json({ success: false, message: `Please wait ${Math.ceil(30 - timeDiff)} seconds before resending` });
+            }
+        }
+
+        const otp = generateOtp();
+        await otpModel.deleteMany({ email });
+        await otpModel.create({ email, otp });
+
+        const mailOptions = {
+            from: process.env.MAIL_FROM,
+            to: email,
+            subject: 'Your New OTP - Fancy Garments',
+            html: generateEmailTemplate('User', otp, 'Verification')
+        };
+        transporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: "New OTP sent to your email" });
     } catch (error) {
         console.log(error);
         return res.json({ success: false, message: error.message });
@@ -195,4 +310,67 @@ const deleteUserProfile = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile };
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        const otp = generateOtp();
+        await otpModel.deleteMany({ email });
+        await otpModel.create({ email, otp });
+
+        const mailOptions = {
+            from: process.env.MAIL_FROM,
+            to: email,
+            subject: 'Password Reset OTP - Fancy Garments',
+            html: generateEmailTemplate(user.name, otp, 'Password Reset')
+        };
+        transporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: "OTP sent to your email", isOtpRequired: true });
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+const verifyForgotOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const otpRecord = await otpModel.findOne({ email, otp });
+        if (!otpRecord) {
+            return res.json({ success: false, message: "Invalid or expired OTP" });
+        }
+        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        await otpModel.deleteOne({ _id: otpRecord._id });
+        res.json({ success: true, message: "OTP verified successfully", resetToken });
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword, resetToken } = req.body;
+        if (!resetToken) return res.json({ success: false, message: "Unauthorized. Please verify OTP first." });
+        try {
+            const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+            if (decoded.email !== email) return res.json({ success: false, message: "Unauthorized." });
+        } catch (err) {
+            return res.json({ success: false, message: "Reset token invalid or expired." });
+        }
+        if (newPassword.length < 8) {
+            return res.json({ success: false, message: "Password must be at least 8 characters long" });
+        }
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        await userModel.findOneAndUpdate({ email }, { password: hashedPassword });
+        res.json({ success: true, message: "Password reset successfully" });
+    } catch (error) {
+         return res.json({ success: false, message: error.message });
+    }
+};
+
+export { loginUser, verifyLoginOtp, registerUser, verifyRegisterOtp, resendOtp, forgotPassword, verifyForgotOtp, resetPassword, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile };

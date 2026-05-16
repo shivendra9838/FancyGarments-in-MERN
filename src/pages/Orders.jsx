@@ -53,8 +53,8 @@ const Orders = () => {
 
   const handlePayment = async (order) => {
     try {
-      const { data } = await axios.post(`${backendUrl}/api/order/stripe`,
-        { cartItems: order.items, address: order.address },
+      const { data } = await axios.post(`${backendUrl}/api/order/pay-existing-stripe`,
+        { orderId: order.orderId },
         { headers: { token } }
       );
       if (data.success) {
@@ -182,6 +182,7 @@ const Orders = () => {
     pending: 'border-yellow-400 bg-yellow-50',
     shipped: 'border-blue-400 bg-blue-50',
     delivered: 'border-green-400 bg-green-50',
+    cancelled: 'border-red-400 bg-red-50',
     default: 'border-gray-300 bg-gray-50',
   };
 
@@ -189,6 +190,7 @@ const Orders = () => {
     pending: 'bg-yellow-100 text-yellow-800',
     shipped: 'bg-blue-100 text-blue-800',
     delivered: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800',
     default: 'bg-gray-100 text-gray-800',
   };
 
@@ -204,17 +206,20 @@ const Orders = () => {
   };
 
   const progressSteps = [
-    { label: 'Placed', icon: <FaBox /> },
-    { label: 'Shipped', icon: <FaTruck /> },
-    { label: 'Delivered', icon: <FaCheckCircle /> },
+    { label: 'Confirmed', icon: <FaCheckCircle />, emoji: '✓' },
+    { label: 'Packed', icon: <FaBox />, emoji: '📦' },
+    { label: 'Shipped', icon: <FaTruck />, emoji: '🚚' },
+    { label: 'Out for Delivery', icon: <FaSearchLocation />, emoji: '🏃' },
+    { label: 'Delivered', icon: <FaCheckCircle />, emoji: '✅' },
   ];
 
   function getProgressIndex(status) {
     switch ((status || '').toLowerCase()) {
-      case 'pending': return 0;
-      case 'shipped': return 1;
-      case 'out for delivery': return 2;
-      case 'delivered': return 2;
+      case 'order placed': return 0;
+      case 'packed': return 1;
+      case 'shipped': return 2;
+      case 'out for delivery': return 3;
+      case 'delivered': return 4;
       default: return 0;
     }
   }
@@ -222,15 +227,17 @@ const Orders = () => {
   function renderProgressBar(status) {
     const idx = getProgressIndex(status);
     return (
-      <div className="flex items-center justify-between w-full max-w-xs mx-auto mt-4">
+      <div className="flex items-center justify-between w-full max-w-md mx-auto mt-4">
         {progressSteps.map((step, i) => (
           <React.Fragment key={step.label}>
-            <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 flex items-center justify-center rounded-full text-lg shadow-md transition-colors duration-300 ${i <= idx ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'}`}>{step.icon}</div>
-              <span className={`mt-1 text-xs font-semibold ${i <= idx ? 'text-green-700' : 'text-gray-400'}`}>{step.label}</span>
+            <div className="flex flex-col items-center" style={{ minWidth: '44px' }}>
+              <div className={`w-9 h-9 flex items-center justify-center rounded-full text-sm shadow-md transition-all duration-300 ${i <= idx ? 'bg-green-500 text-white scale-110' : 'bg-gray-200 text-gray-400 dark:bg-gray-700'}`}>
+                {i <= idx ? step.emoji : step.icon}
+              </div>
+              <span className={`mt-1 text-[10px] sm:text-xs font-semibold text-center leading-tight ${i <= idx ? 'text-green-700 dark:text-green-400' : 'text-gray-400'}`}>{step.label}</span>
             </div>
             {i < progressSteps.length - 1 && (
-              <div className={`flex-1 h-1 mx-1 rounded transition-colors duration-300 ${i < idx ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+              <div className={`flex-1 h-1 mx-0.5 rounded transition-all duration-500 ${i < idx ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`} />
             )}
           </React.Fragment>
         ))}
@@ -301,11 +308,31 @@ const Orders = () => {
                 </div>
 
                 <div className="mt-6 pt-4 border-t">
-                  {order.payment ? (
+                  {order.status === 'Cancelled' ? (
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-lg">✕</div>
+                        <h3 className="font-bold text-red-700 text-lg">Order Cancelled</h3>
+                      </div>
+                      <p className="text-sm text-red-600 mb-1"><strong>Reason:</strong> {order.cancellationReason || 'Requested by customer'}</p>
+                      {order.payment && (
+                        <p className="text-sm text-red-600">
+                          <strong>Refund Status:</strong> {order.refundStatus || 'Pending'} 
+                          {order.refundStatus === 'Pending' && ' (Expect 5-7 business days)'}
+                        </p>
+                      )}
+                    </div>
+                  ) : order.payment ? (
                     <div>
                       <h3 className="font-bold text-center mb-2">Delivery Status</h3>
                       {renderProgressBar(order.status)}
-                      <p className='text-center text-sm text-gray-500 mt-2'>Your order will be delivered soon.</p>
+                      <p className='text-center text-sm text-gray-500 mt-3'>
+                        {order.status === 'Delivered' 
+                          ? '✅ Your order has been delivered!' 
+                          : order.estimatedDelivery 
+                            ? `🚛 Estimated delivery: ${order.estimatedDelivery}`
+                            : '🚛 Your order will be delivered within 3-5 business days.'}
+                      </p>
                     </div>
                   ) : (
                     <div className="text-center">
@@ -334,6 +361,14 @@ const Orders = () => {
                   >
                     <FaEnvelope /> Email Invoice
                   </button>
+                  {order.status === 'Cancelled' && (
+                    <Link
+                      to="/collection"
+                      className="flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg shadow transition-all font-semibold text-sm"
+                    >
+                      Reorder Items
+                    </Link>
+                  )}
                   {order.status !== 'Delivered' && order.status !== 'Cancelled' && (
                     <button
                       onClick={() => openCancelModal(order)}

@@ -58,14 +58,16 @@ const PlaceOrder = () => {
       const prod = products.find((p) => p._id === id);
       if (!prod) continue;
       for (const size in cartItems[id]) {
-        items.push({
-          _id: id,
-          name: prod.name,
-          price: prod.price,
-          size,
-          quantity: cartItems[id][size],
-          image: prod.images?.[0] || '', // Add product image
-        });
+        if (cartItems[id][size] > 0) {
+          items.push({
+            _id: id,
+            name: prod.name,
+            price: prod.price,
+            size,
+            quantity: cartItems[id][size],
+            image: prod.images?.[0] || '', // Add product image
+          });
+        }
       }
     }
 

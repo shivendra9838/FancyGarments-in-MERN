@@ -21,13 +21,13 @@ const GiftCardPromo = () => {
   };
 
   return (
-    <div className="my-12 flex flex-col md:flex-row items-center justify-center gap-8 gap-y-6 bg-gradient-to-r from-pink-50 via-yellow-50 to-pink-100 rounded-2xl shadow-lg p-8 border-b-4 border-pink-200">
-      <div className="mb-4 md:mb-0 md:mr-8 flex items-center justify-center">
+    <div className="my-10 sm:my-12 flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 bg-gradient-to-r from-pink-50 via-yellow-50 to-pink-100 rounded-2xl shadow-lg p-6 sm:p-8 border-b-4 border-pink-200">
+      <div className="flex items-center justify-center flex-shrink-0">
         {giftCardIcon}
       </div>
       <div className="flex-1 text-center md:text-left">
-        <h2 className="text-2xl font-bold mb-2 text-pink-700">Surprise your loved ones!</h2>
-        <p className="text-gray-600 mb-4">Send a <span className="font-semibold text-pink-600">Fancy Garments Gift Card</span> and make their day special. Perfect for birthdays, celebrations, and more!</p>
+        <h2 className="text-xl sm:text-2xl font-bold mb-2 text-pink-700">Surprise your loved ones!</h2>
+        <p className="text-sm sm:text-base text-gray-600 mb-4">Send a <span className="font-semibold text-pink-600">Fancy Garments Gift Card</span> and make their day special. Perfect for birthdays, celebrations, and more!</p>
         <button
           onClick={handleSendGiftCard}
           className="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-full font-bold shadow transition"

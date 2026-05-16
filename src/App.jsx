@@ -21,7 +21,7 @@ import ChatBot from './components/ChatBot';
 const App = () => {
 
   return (
-    <div className='px-4'>
+    <div className='w-full min-h-screen flex flex-col overflow-x-hidden pt-[84px]'>
 		<ToastContainer />
 		<NavBar/>
 		<SearchBar/>

@@ -13,10 +13,10 @@ const NewArrivalsCarousel = () => {
   }, [products]);
 
   return (
-    <section className="w-screen relative left-1/2 -ml-[50vw] my-16">
+    <section className="w-full my-10 sm:my-16">
       {/* Heading */}
-      <div className="text-center px-4 lg:px-8 mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+      <div className="text-center mb-6 px-2">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
           🆕 New Arrivals
         </h2>
         <p className="text-sm text-gray-500">
@@ -26,13 +26,13 @@ const NewArrivalsCarousel = () => {
 
       {/* Horizontal Scroll List */}
       <motion.div
-        className="flex gap-6 overflow-x-auto px-4 lg:px-8 scrollbar-hide pb-4"
+        className="flex gap-4 sm:gap-6 overflow-x-auto px-4 sm:px-8 scrollbar-hide pb-4"
         whileTap={{ cursor: 'grabbing' }}
       >
         {latestProducts.map((item) => (
           <motion.div
             key={item._id}
-            className="relative min-w-full max-w-full md:min-w-[220px] md:max-w-[240px] bg-white dark:bg-gray-900 rounded-2xl shadow-md p-3 flex flex-col items-center transition-all border-b-4 border-indigo-200 hover:shadow-xl"
+            className="relative flex-shrink-0 w-[160px] sm:w-[220px] md:w-[240px] bg-white dark:bg-gray-900 rounded-2xl shadow-md p-3 flex flex-col items-center transition-all border-b-4 border-indigo-200 hover:shadow-xl"
             whileHover={{ scale: 1.05 }}
           >
             <span className="absolute top-2 left-2 bg-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">New</span>

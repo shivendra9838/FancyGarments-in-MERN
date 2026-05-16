@@ -17,38 +17,38 @@ const Home = () => {
   const shopRef = useRef(null);
 
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen w-full">
+    <div className="bg-white dark:bg-gray-900 min-h-screen w-full overflow-x-hidden">
       <Hero shopRef={shopRef} />
-      <div className="w-full h-12 bg-gradient-to-b from-black/40 via-white/80 to-white dark:from-black/60 dark:via-gray-900/80 dark:to-gray-900 -mt-4 z-10 relative" />
-      <main className="max-w-7xl mx-auto px-2 sm:px-6 md:px-10 lg:px-16 py-8">
-        <section className="mb-16" ref={shopRef}>
+      <div className="w-full h-8 sm:h-12 bg-gradient-to-b from-black/40 via-white/80 to-white dark:from-black/60 dark:via-gray-900/80 dark:to-gray-900 -mt-4 z-10 relative" />
+      <main className="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 py-6 sm:py-8">
+        <section className="mb-10 sm:mb-16" ref={shopRef}>
           <ShopByCategory />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <NewArrivalsCarousel />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <GiftCardPromo />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <TrustSection />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <TodaysLook />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <PromoReels />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <BeforeAfterSlider />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <BestSeller />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <OurPolicy />
         </section>
-        <section className="mb-16">
+        <section className="mb-10 sm:mb-16">
           <NewsLetterBox />
         </section>
       </main>

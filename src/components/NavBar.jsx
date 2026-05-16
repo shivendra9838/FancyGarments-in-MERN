@@ -34,6 +34,21 @@ const NavBar = () => {
   const [showGiftCards, setShowGiftCards] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Sticky Navbar logic
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Theme toggle state
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -94,7 +109,11 @@ const NavBar = () => {
 
   return (
     <>
-      <div className='sticky top-0 z-50 bg-white/80 backdrop-blur-sm flex items-center justify-between py-4 px-4 sm:px-8 font-medium shadow-lg'>
+      <div className={`fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 sm:px-8 lg:px-16 font-medium transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md py-3' 
+          : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm py-5'
+      }`}>
         <Link to='/'>
           <img src={assets.logo} className='w-28 sm:w-36' alt='Logo' />
         </Link>
@@ -108,28 +127,28 @@ const NavBar = () => {
         </button>
         {/* Main nav links (hidden on mobile) */}
         <ul className='hidden sm:flex items-center gap-2'>
-          <NavLink to='/' className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100'>
+          <NavLink to='/' className={({isActive}) => `px-3 py-2 rounded-full text-sm font-semibold transition-colors ${isActive ? 'text-pink-600 bg-pink-50' : 'hover:text-pink-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200'}`}>
             {t('home')}
           </NavLink>
-          <NavLink to='/collection' className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100'>
+          <NavLink to='/collection' className={({isActive}) => `px-3 py-2 rounded-full text-sm font-semibold transition-colors ${isActive ? 'text-pink-600 bg-pink-50' : 'hover:text-pink-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200'}`}>
             {t('collection')}
           </NavLink>
-          <NavLink to='/about' className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100'>
+          <NavLink to='/about' className={({isActive}) => `px-3 py-2 rounded-full text-sm font-semibold transition-colors ${isActive ? 'text-pink-600 bg-pink-50' : 'hover:text-pink-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200'}`}>
             {t('about')}
           </NavLink>
-          <NavLink to='/contact' className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100'>
+          <NavLink to='/contact' className={({isActive}) => `px-3 py-2 rounded-full text-sm font-semibold transition-colors ${isActive ? 'text-pink-600 bg-pink-50' : 'hover:text-pink-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200'}`}>
             {t('contact')}
           </NavLink>
           <button
             onClick={() => setShowSearch(true)}
-            className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100'
+            className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100 dark:hover:bg-gray-800'
           >
-            <img src={assets.search_icon} className='w-5 cursor-pointer' alt='Search' />
+            <img src={assets.search_icon} className='w-5 cursor-pointer dark:invert' alt='Search' />
           </button>
           <button
             type='button'
             onClick={() => setShowGiftCards((v) => !v)}
-            className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100 flex items-center gap-1 text-pink-600'
+            className='px-3 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-1 text-pink-600'
           >
             <FaGift className='text-lg' />
             {t('gift_cards')}

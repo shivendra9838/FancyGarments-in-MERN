@@ -15,7 +15,9 @@ const Add = ({ token }) => {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('Men');
   const [subCategory, setSubCategory] = useState('Topwear');
+  const [productType, setProductType] = useState('');
   const [bestseller, setBestseller] = useState(false);
+  const [isNewArrival, setIsNewArrival] = useState(false);
   const [sizes, setSizes] = useState([]);
 
 
@@ -29,8 +31,10 @@ const Add = ({ token }) => {
       formData.append("description", description);
       formData.append("price", price);
       formData.append("category", category);
-      formData.append("subCategory", subCategory); 
+      formData.append("subCategory", subCategory);
+      formData.append("productType", productType);
       formData.append("bestseller", bestseller);
+      formData.append("isNewArrival", isNewArrival);
       formData.append("sizes", JSON.stringify(sizes));
 
       image1 && formData.append("image1", image1);
@@ -141,6 +145,28 @@ const Add = ({ token }) => {
         </select>
       </div>
 
+      <div className="flex-1">
+        <p className="mb-2 text-sm">Product Type <span className="text-pink-500 text-xs">(for strict filtering)</span></p>
+        <select onChange={(e) => setProductType(e.target.value)} value={productType} className="w-full px-3 py-2 border border-gray-300 rounded">
+          <option value="">-- Select Type --</option>
+          <optgroup label="Women / Girls">
+            <option value="tops">Tops</option>
+            <option value="dresses">Dresses</option>
+            <option value="skirts">Skirts</option>
+          </optgroup>
+          <optgroup label="Men / Boys">
+            <option value="shirts">Shirts</option>
+            <option value="shorts">Shorts</option>
+            <option value="trousers">Trousers</option>
+            <option value="trackpants">Trackpants</option>
+          </optgroup>
+          <optgroup label="Unisex">
+            <option value="tshirts">T-Shirts</option>
+            <option value="jeans">Jeans</option>
+          </optgroup>
+        </select>
+      </div>
+
          <div className="w-[90px]">
         <p className="mb-2 text-sm">Product Price</p>
         <input onChange={(e)=> setPrice(e.target.value)} value={price}
@@ -182,9 +208,15 @@ const Add = ({ token }) => {
       </div>
 
 
-      <div className='flex gap-2 mt-2'>
-        <input onChange={()=> setBestseller(prev=> !prev)} checked={bestseller} type="checkbox" id="bestseller"/>
-        <label className = "cursor-pointer" htmlFor='bestseller'>Add to bestseller</label>
+      <div className='flex gap-4 mt-2 flex-wrap'>
+        <div className='flex gap-2 items-center'>
+          <input onChange={()=> setBestseller(prev=> !prev)} checked={bestseller} type="checkbox" id="bestseller"/>
+          <label className="cursor-pointer text-sm" htmlFor='bestseller'>Add to Bestseller</label>
+        </div>
+        <div className='flex gap-2 items-center'>
+          <input onChange={()=> setIsNewArrival(prev=> !prev)} checked={isNewArrival} type="checkbox" id="isNewArrival"/>
+          <label className="cursor-pointer text-sm text-pink-600 font-semibold" htmlFor='isNewArrival'>🆕 Mark as New Arrival</label>
+        </div>
       </div>
 
       <button type='submit' className='w-28 py-3 mt-4 bg-black text-white'>Add</button>

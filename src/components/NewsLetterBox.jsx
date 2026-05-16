@@ -29,16 +29,16 @@ const NewsLetterBox = () => {
           🎉😀Thank you for subscribing! You’ll receive the latest updates soon.
         </p>
       ) : (
-        <form onSubmit={onSubmitHandler} className='w-full sm:w-1/2 flex flex-col sm:flex-row items-center mx-auto my-6 border pl-3 shadow-md rounded-md gap-2'>
+        <form onSubmit={onSubmitHandler} className='w-full sm:w-3/4 md:w-1/2 flex flex-col sm:flex-row items-stretch sm:items-center mx-auto my-6 border shadow-md rounded-md overflow-hidden gap-0'>
           <input
-            className='w-full outline-none py-2 px-4 text-gray-700'
+            className='w-full outline-none py-3 px-4 text-gray-700 flex-1'
             type='email'
             placeholder='Enter your e-mail'
             required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}  //it gets the current value of the input field
+            onChange={(e) => setEmail(e.target.value)}
           />
-          <button type='submit' className='bg-black text-white text-sm font-medium px-8 py-3 rounded-r-md transition-transform hover:scale-105'>
+          <button type='submit' className='bg-black text-white text-sm font-medium px-8 py-3 transition-transform hover:scale-105 whitespace-nowrap'>
             SUBSCRIBE
           </button>
         </form>

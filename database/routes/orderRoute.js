@@ -1,5 +1,5 @@
 import express from 'express';
-import{placeOrder,placeOrderStripe, placeOrderRazorpay , allOrders, userOrders, updateStatus, verifyStripe, deleteOrder, cancelOrder } from '../controllers/orderController.js';
+import{placeOrder,placeOrderStripe, placeOrderRazorpay , allOrders, userOrders, updateStatus, verifyStripe, deleteOrder, cancelOrder, payExistingStripe } from '../controllers/orderController.js';
 import adminAuth from '../middleware/adminAuth.js';
 import authUser  from '../middleware/auth.js';
 
@@ -14,6 +14,7 @@ orderRouter.post('/delete',adminAuth,deleteOrder);
 orderRouter.post('/place',authUser,placeOrder);
 orderRouter.post('/stripe',authUser,placeOrderStripe);
 orderRouter.post('/razorpay',authUser,placeOrderRazorpay);
+orderRouter.post('/pay-existing-stripe', authUser, payExistingStripe);
 
 // User features
 orderRouter.post('/userorders',authUser,userOrders);

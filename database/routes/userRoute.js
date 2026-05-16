@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { loginUser, registerUser, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile } from '../controllers/userController.js';
+import { loginUser, verifyLoginOtp, registerUser, verifyRegisterOtp, resendOtp, forgotPassword, verifyForgotOtp, resetPassword, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js';
 import { profileImageUpload } from '../middleware/multer.js';
 
@@ -8,7 +8,13 @@ const userRouter = express.Router();
 
 // Public routes
 userRouter.post('/login', loginUser);
+userRouter.post('/verify-login-otp', verifyLoginOtp);
 userRouter.post('/register', registerUser);
+userRouter.post('/verify-register-otp', verifyRegisterOtp);
+userRouter.post('/resend-otp', resendOtp);
+userRouter.post('/forgot-password', forgotPassword);
+userRouter.post('/verify-forgot-otp', verifyForgotOtp);
+userRouter.post('/reset-password', resetPassword);
 
 // Admin routes
 userRouter.post('/admin', adminLogin);

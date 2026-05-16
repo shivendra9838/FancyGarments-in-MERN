@@ -6,9 +6,16 @@ a.active hr{
     display: block;
 }
 
-body{
-    margin-left: 20px;
-    margin-right: 20px;
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
 }
 
 ::-webkit-scrollbar{

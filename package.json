@@ -18,6 +18,7 @@
     "axios": "^1.11.0",
     "express": "^5.1.0",
     "framer-motion": "^12.23.6",
+    "fuse.js": "^7.3.0",
     "html2pdf.js": "^0.10.3",
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",

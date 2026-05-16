@@ -19,9 +19,9 @@ const TodaysLook = () => {
         <span className="inline-block text-2xl font-bold mb-2">👗 Today’s Look</span>
         <p className="text-gray-500 text-sm">A unique outfit suggestion curated for you. Mix, match, and shine!</p>
       </div>
-      <div className="flex flex-wrap justify-center gap-8 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8 mb-6">
         {lookProducts.map((item) => (
-          <div key={item._id} className="w-48">
+          <div key={item._id} className="w-full">
             <ProductItem item={item} />
           </div>
         ))}
