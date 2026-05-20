@@ -1,7 +1,7 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import Stripe from "stripe";
-import transporter from '../config/nodemailer.js';
+import { sendEmailViaResend as sendEmail } from '../utils/resendEmail.js';
 import { generateOrderConfirmationEmail, generateStatusUpdateEmail, generateOrderCancellationEmail } from '../utils/orderEmailTemplate.js';
 
 // Global variables
@@ -41,12 +41,11 @@ async function sendOrderConfirmationEmail(userId, order) {
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   });
 
-  await transporter.sendMail({
-    from: process.env.MAIL_FROM,
-    to: user.email,
-    subject: `Order Confirmed! 🎉 — Fancy Garments #${order._id.toString().slice(-6).toUpperCase()}`,
-    html,
-  });
+  await sendEmail(
+    user.email,
+    `Order Confirmed! 🎉 — Fancy Garments #${order._id.toString().slice(-6).toUpperCase()}`,
+    html
+  );
 
   // Mark email sent
   await orderModel.findByIdAndUpdate(order._id, { emailSent: true, estimatedDelivery: estDelivery });
@@ -302,12 +301,11 @@ const updateStatus = async (req, res) => {
           newStatus: status,
           frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
         });
-        await transporter.sendMail({
-          from: process.env.MAIL_FROM,
-          to: user.email,
-          subject: `Order ${status} — Fancy Garments #${order._id.toString().slice(-6).toUpperCase()}`,
-          html,
-        });
+        await sendEmail(
+          user.email,
+          `Order ${status} — Fancy Garments #${order._id.toString().slice(-6).toUpperCase()}`,
+          html
+        );
       }
     } catch (e) { console.error('Status email failed:', e.message); }
 
@@ -366,22 +364,21 @@ const cancelOrder = async (req, res) => {
           frontendUrl: req.headers.origin || process.env.FRONTEND_URL
         });
         
-        await transporter.sendMail({
-          from: `"Fancy Garments" <${process.env.MAIL_FROM}>`,
-          to: user.email,
-          subject: `Order Cancelled - Fancy Garments (#${order._id.toString().slice(-6)})`,
+        await sendEmail(
+          user.email,
+          `Order Cancelled - Fancy Garments (#${order._id.toString().slice(-6)})`,
           html
-        });
+        );
 
         // Send admin notification
-        await transporter.sendMail({
-          from: `"Fancy Garments System" <${process.env.MAIL_FROM}>`,
-          to: process.env.MAIL_FROM, // Admin receives it at the store's email
-          subject: `🚨 Order Cancelled: #${order._id.toString().slice(-6)}`,
-          html: `<p>Order <b>#${order._id}</b> was cancelled by the customer.</p>
-                 <p>Reason: ${reason}</p>
-                 <p>Refund Status: ${refundStatus}</p>`
-        });
+        await sendEmail(
+          process.env.MAIL_FROM,
+          `🚨 Order Cancelled: #${order._id.toString().slice(-6)}`,
+          `<p>Order <b>#${order._id}</b> was cancelled by the customer.</p>
+           <p>Reason: ${reason}</p>
+           <p>Refund Status: ${refundStatus}</p>`,
+          'Fancy Garments System'
+        );
       }
     } catch (emailError) {
       console.error("Cancellation email failed:", emailError.message);
