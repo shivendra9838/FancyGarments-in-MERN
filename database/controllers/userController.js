@@ -3,20 +3,20 @@ import bcrypt from 'bcrypt';
 import userModel from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import path from 'path';
-import transporter from '../config/nodemailer.js';
 import otpModel from '../models/otpModel.js';
 import { generateEmailTemplate } from '../utils/emailTemplate.js';
+import { sendEmailViaResend as sendEmail } from '../utils/resendEmail.js';
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const createToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' }); // set token expiration
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 };
 
-// Route for user login 
+// Route for user login
 const loginUser = async (req, res) => {
-    try{
-        const { email, password } = req.body;       
+    try {
+        const { email, password } = req.body;
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.json({ success: false, message: "User not found" });
@@ -24,26 +24,18 @@ const loginUser = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch) {
             const otp = generateOtp();
-            await otpModel.deleteMany({ email }); // Clear old OTPs
+            await otpModel.deleteMany({ email });
             await otpModel.create({ email, otp });
-            
-            // Send OTP email
-            const mailOptions = {
-                from: process.env.MAIL_FROM,
-                to: email,
-                subject: 'Your Login OTP - Fancy Garments',
-                html: generateEmailTemplate(user.name, otp, 'Login')
-            };
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) console.log("Error sending OTP email:", error);
-            });
+
+            // Send OTP in background (non-blocking)
+            sendEmail(email, 'Your Login OTP - Fancy Garments', generateEmailTemplate(user.name, otp, 'Login'))
+                .catch(err => console.log("Error sending login OTP:", err.message));
 
             res.json({ success: true, message: "OTP sent to your email", isOtpRequired: true });
-        }
-        else {
+        } else {
             return res.json({ success: false, message: "Invalid credentials" });
         }
-    }catch (error) {
+    } catch (error) {
         console.log(error);
         return res.json({ success: false, message: error.message });
     }
@@ -71,30 +63,29 @@ const verifyLoginOtp = async (req, res) => {
     }
 };
 
-// 👤 Get User Profile after login
+// Get User Profile after login
 const getUserProfile = async (req, res) => {
-  try {
-    const user = await userModel.findById(req.userId).select("-password"); // Hide password
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    try {
+        const user = await userModel.findById(req.userId).select("-password");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.json({ success: true, user });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false, message: error.message });
     }
-    res.json({ success: true, user });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
 };
 
-// ✅ Route for user registration
+// Route for user registration
 const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-        // Check if user already exists
+
         const exist = await userModel.findOne({ email });
         if (exist) {
             return res.json({ success: false, message: "User already exists" });
         }
-        // Validate email and password
         if (!validator.isEmail(email)) {
             return res.json({ success: false, message: "Please enter a valid email" });
         }
@@ -102,21 +93,13 @@ const registerUser = async (req, res) => {
             return res.json({ success: false, message: "Password must be at least 8 characters long" });
         }
 
-        // Generate and save OTP
         const otp = generateOtp();
         await otpModel.deleteMany({ email });
         await otpModel.create({ email, otp });
 
-        // Send OTP email
-        const mailOptions = {
-            from: process.env.MAIL_FROM,
-            to: email,
-            subject: 'Your Registration OTP - Fancy Garments',
-            html: generateEmailTemplate(name, otp, 'Account Registration')
-        };
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) console.log("Error sending registration OTP email:", error);
-        });
+        // Send OTP in background (non-blocking)
+        sendEmail(email, 'Your Registration OTP - Fancy Garments', generateEmailTemplate(name, otp, 'Account Registration'))
+            .catch(err => console.log("Error sending registration OTP:", err.message));
 
         res.json({ success: true, message: "OTP sent to your email", isOtpRequired: true });
     } catch (error) {
@@ -145,14 +128,9 @@ const verifyRegisterOtp = async (req, res) => {
         await otpModel.deleteOne({ _id: otpRecord._id });
         const token = createToken(user._id);
 
-        // Send welcome email
-        const mailOptions = {
-            from: process.env.MAIL_FROM,
-            to: email,
-            subject: 'Welcome to Fancy Garments',
-            html: generateEmailTemplate(name, 'N/A', 'Welcome to Fancy Garments! You can ignore the OTP field.')
-        };
-        transporter.sendMail(mailOptions);
+        // Send welcome email in background
+        sendEmail(email, 'Welcome to Fancy Garments', generateEmailTemplate(name, 'N/A', 'Welcome to Fancy Garments!'))
+            .catch(err => console.log("Error sending welcome email:", err.message));
 
         res.json({ success: true, token, message: "Registration successful" });
     } catch (error) {
@@ -165,8 +143,7 @@ const verifyRegisterOtp = async (req, res) => {
 const resendOtp = async (req, res) => {
     try {
         const { email } = req.body;
-        
-        // Check cooldown
+
         const lastOtp = await otpModel.findOne({ email }).sort({ createdAt: -1 });
         if (lastOtp) {
             const timeDiff = (Date.now() - lastOtp.createdAt.getTime()) / 1000;
@@ -179,13 +156,8 @@ const resendOtp = async (req, res) => {
         await otpModel.deleteMany({ email });
         await otpModel.create({ email, otp });
 
-        const mailOptions = {
-            from: process.env.MAIL_FROM,
-            to: email,
-            subject: 'Your New OTP - Fancy Garments',
-            html: generateEmailTemplate('User', otp, 'Verification')
-        };
-        transporter.sendMail(mailOptions);
+        sendEmail(email, 'Your New OTP - Fancy Garments', generateEmailTemplate('User', otp, 'Verification'))
+            .catch(err => console.log("Error resending OTP:", err.message));
 
         res.json({ success: true, message: "New OTP sent to your email" });
     } catch (error) {
@@ -194,120 +166,95 @@ const resendOtp = async (req, res) => {
     }
 };
 
-// Route for admin login 
+// Route for admin login
 const adminLogin = async (req, res) => {
-    try{
-        const {email, password} = req.body;
-        if(email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD){
-            const token = jwt.sign(email+password,process.env.JWT_SECRET);
-            res.json({success:true,token});
-        }else{
-            res.json({success:false,message:"Invalid credentials"})
+    try {
+        const { email, password } = req.body;
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            const token = jwt.sign(email + password, process.env.JWT_SECRET);
+            res.json({ success: true, token });
+        } else {
+            res.json({ success: false, message: "Invalid credentials" });
         }
-    }catch(error){
+    } catch (error) {
         console.log(error);
-        res.json({success:false,message:error.message});
+        res.json({ success: false, message: error.message });
     }
 };
 
-// Update user profile (advanced)
+// Update user profile
 const updateUserProfile = async (req, res) => {
-  try {
-    const userId = req.userId;
-    const updateFields = {};
-    const allowedFields = ['name', 'age', 'phone', 'address', 'subscription'];
-    allowedFields.push('mobile');
-    allowedFields.push('gender');
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) updateFields[field] = req.body[field];
-    });
-    if (req.file && req.file.filename) {
-      updateFields.profileImg = `/uploads/${req.file.filename}`;
+    try {
+        const userId = req.userId;
+        const updateFields = {};
+        const allowedFields = ['name', 'age', 'phone', 'address', 'subscription', 'mobile', 'gender'];
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) updateFields[field] = req.body[field];
+        });
+        if (req.file && req.file.filename) {
+            updateFields.profileImg = `/uploads/${req.file.filename}`;
+        }
+        const user = await userModel.findByIdAndUpdate(userId, updateFields, { new: true, select: '-password' });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.json({ success: true, user });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success: false, message: error.message });
     }
-    const user = await userModel.findByIdAndUpdate(userId, updateFields, { new: true, select: '-password' });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-    res.json({ success: true, user });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
 };
 
 const allUsers = async (req, res) => {
-  try {
-    const users = await userModel.find({}, 'email password');
-    res.json({ success: true, users });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch users' });
-  }
+    try {
+        const users = await userModel.find({}, 'email password');
+        res.json({ success: true, users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to fetch users' });
+    }
 };
 
 const allProfiles = async (req, res) => {
-  try {
-    const profiles = await userModel.aggregate([
-      {
-        $addFields: {
-          userIdString: { $toString: '$_id' }
-        }
-      },
-      {
-        $lookup: {
-          from: 'orders',
-          localField: 'userIdString',
-          foreignField: 'userId',
-          as: 'orders'
-        }
-      },
-      {
-        $lookup: {
-          from: 'wishlists',
-          localField: '_id',
-          foreignField: 'user',
-          as: 'wishlist'
-        }
-      },
-      {
-        $unwind: {
-          path: '$wishlist',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $addFields: {
-          totalOrders: { $size: '$orders' },
-          totalSpent: { $sum: '$orders.amount' },
-          wishlistItems: { $size: { $ifNull: ['$wishlist.items', []] } }
-        }
-      },
-      {
-        $project: {
-          password: 0,
-          'orders.userId': 0,
-          'wishlist.userId': 0,
-          'wishlist.items': 0, // Exclude full wishlist items from the main list
-          userIdString: 0 // Remove the temporary field
-        }
-      }
-    ]);
-    res.json({ success: true, profiles });
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json({ success: false, message: 'Failed to fetch profiles' });
-  }
+    try {
+        const profiles = await userModel.aggregate([
+            { $addFields: { userIdString: { $toString: '$_id' } } },
+            { $lookup: { from: 'orders', localField: 'userIdString', foreignField: 'userId', as: 'orders' } },
+            { $lookup: { from: 'wishlists', localField: '_id', foreignField: 'user', as: 'wishlist' } },
+            { $unwind: { path: '$wishlist', preserveNullAndEmptyArrays: true } },
+            {
+                $addFields: {
+                    totalOrders: { $size: '$orders' },
+                    totalSpent: { $sum: '$orders.amount' },
+                    wishlistItems: { $size: { $ifNull: ['$wishlist.items', []] } }
+                }
+            },
+            {
+                $project: {
+                    password: 0,
+                    'orders.userId': 0,
+                    'wishlist.userId': 0,
+                    'wishlist.items': 0,
+                    userIdString: 0
+                }
+            }
+        ]);
+        res.json({ success: true, profiles });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Failed to fetch profiles' });
+    }
 };
 
 const deleteUserProfile = async (req, res) => {
-  try {
-    const user = await userModel.findByIdAndDelete(req.params.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    try {
+        const user = await userModel.findByIdAndDelete(req.params.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        res.json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to delete user' });
     }
-    res.json({ success: true, message: 'User deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to delete user' });
-  }
 };
 
 const forgotPassword = async (req, res) => {
@@ -322,13 +269,8 @@ const forgotPassword = async (req, res) => {
         await otpModel.deleteMany({ email });
         await otpModel.create({ email, otp });
 
-        const mailOptions = {
-            from: process.env.MAIL_FROM,
-            to: email,
-            subject: 'Password Reset OTP - Fancy Garments',
-            html: generateEmailTemplate(user.name, otp, 'Password Reset')
-        };
-        transporter.sendMail(mailOptions);
+        sendEmail(email, 'Password Reset OTP - Fancy Garments', generateEmailTemplate(user.name, otp, 'Password Reset'))
+            .catch(err => console.log("Error sending password reset OTP:", err.message));
 
         res.json({ success: true, message: "OTP sent to your email", isOtpRequired: true });
     } catch (error) {
@@ -369,7 +311,7 @@ const resetPassword = async (req, res) => {
         await userModel.findOneAndUpdate({ email }, { password: hashedPassword });
         res.json({ success: true, message: "Password reset successfully" });
     } catch (error) {
-         return res.json({ success: false, message: error.message });
+        return res.json({ success: false, message: error.message });
     }
 };
 
