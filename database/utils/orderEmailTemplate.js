@@ -1,7 +1,4 @@
-/**
- * Order Confirmation Email Template — Fancy Garments
- * Premium dark-gradient HTML email (Amazon/Flipkart/Myntra style)
- */
+
 export const generateOrderConfirmationEmail = ({ customerName, orderId, items, totalAmount, paymentMethod, address, estimatedDelivery, frontendUrl }) => {
   const itemRows = items.map(item => `
     <tr>
