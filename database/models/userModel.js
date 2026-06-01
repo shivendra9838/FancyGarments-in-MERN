@@ -5,7 +5,9 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
+    googleId: { type: String },
+    authProvider: { type: String, enum: ['password', 'google', 'email'], default: 'password' },
     cartData: {
       type: Object, 
       default: {},

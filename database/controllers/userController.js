@@ -6,12 +6,57 @@ import path from 'path';
 import otpModel from '../models/otpModel.js';
 import { generateEmailTemplate } from '../utils/emailTemplate.js';
 import { sendEmailViaResend as sendEmail } from '../utils/resendEmail.js';
+import crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID);
 
 const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 };
+
+const getDisplayNameFromEmail = (email) => {
+    const [name] = email.split('@');
+    return name
+        .split(/[._-]/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ') || 'Fancy Garments Customer';
+};
+
+const buildMagicLinkTemplate = (name, link, mode) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background: #0e0b0f; font-family: Arial, Helvetica, sans-serif; color: #faf7f2; }
+        .wrap { padding: 36px 16px; }
+        .card { max-width: 560px; margin: 0 auto; background: #171218; border: 1px solid rgba(255,255,255,0.12); border-radius: 18px; overflow: hidden; }
+        .head { padding: 28px 24px; text-align: center; background: linear-gradient(135deg, #c9a96e, #8f6d4b); color: #130e09; font-weight: 800; letter-spacing: 4px; }
+        .body { padding: 34px 28px; text-align: center; }
+        .btn { display: inline-block; margin: 18px 0 22px; padding: 14px 24px; border-radius: 12px; background: linear-gradient(135deg, #c9a96e, #a8835a); color: #130e09; text-decoration: none; font-weight: 800; }
+        .muted { color: rgba(255,255,255,0.55); font-size: 13px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="card">
+            <div class="head">FANCY GARMENTS</div>
+            <div class="body">
+                <h2>Hi ${name}</h2>
+                <p>Click below to ${mode === 'signup' ? 'create your account' : 'sign in'} securely. This link expires in 5 minutes.</p>
+                <a class="btn" href="${link}">${mode === 'signup' ? 'Create account' : 'Sign in'} securely</a>
+                <p class="muted">If the button does not work, paste this link into your browser:<br>${link}</p>
+                <p class="muted">If you did not request this, you can ignore this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+`;
 
 // Route for user login
 const loginUser = async (req, res) => {
@@ -20,6 +65,9 @@ const loginUser = async (req, res) => {
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.json({ success: false, message: "User not found" });
+        }
+        if (!user.password) {
+            return res.json({ success: false, message: "This account uses Google or email link sign-in" });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch) {
@@ -35,6 +83,125 @@ const loginUser = async (req, res) => {
         } else {
             return res.json({ success: false, message: "Invalid credentials" });
         }
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+const googleAuth = async (req, res) => {
+    try {
+        const { credential } = req.body;
+        const clientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
+
+        if (!clientId) {
+            return res.json({ success: false, message: "Google sign-in is not configured. Add GOOGLE_CLIENT_ID to the backend environment." });
+        }
+        if (!credential) {
+            return res.json({ success: false, message: "Missing Google credential" });
+        }
+
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: clientId,
+        });
+        const payload = ticket.getPayload();
+        if (!payload?.email || !payload.email_verified) {
+            return res.json({ success: false, message: "Google account email is not verified" });
+        }
+
+        let user = await userModel.findOne({ email: payload.email });
+        if (!user) {
+            user = await userModel.create({
+                name: payload.name || getDisplayNameFromEmail(payload.email),
+                email: payload.email,
+                googleId: payload.sub,
+                profileImg: payload.picture,
+                authProvider: 'google',
+            });
+        } else {
+            const updates = {
+                googleId: user.googleId || payload.sub,
+                authProvider: user.authProvider === 'password' ? 'password' : 'google',
+            };
+            if (!user.profileImg && payload.picture) updates.profileImg = payload.picture;
+            await userModel.updateOne({ _id: user._id }, updates);
+        }
+
+        const token = createToken(user._id);
+        res.json({ success: true, token, message: "Google sign-in successful" });
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: "Google sign-in failed" });
+    }
+};
+
+const requestMagicLink = async (req, res) => {
+    try {
+        const { email, name, mode = 'login', redirectBaseUrl } = req.body;
+        if (!email || !validator.isEmail(email)) {
+            return res.json({ success: false, message: "Please enter a valid email" });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const existingUser = await userModel.findOne({ email: normalizedEmail });
+        if (mode === 'login' && !existingUser) {
+            return res.json({ success: false, message: "No account found. Please create one first." });
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const displayName = name?.trim() || existingUser?.name || getDisplayNameFromEmail(normalizedEmail);
+        const purpose = mode === 'signup' ? 'magic-signup' : 'magic-login';
+
+        await otpModel.deleteMany({ email: normalizedEmail, purpose });
+        await otpModel.create({ email: normalizedEmail, otp: token, purpose, name: displayName });
+
+        const baseUrl = redirectBaseUrl || process.env.FRONTEND_URL || 'http://localhost:5173';
+        const link = `${baseUrl.replace(/\/$/, '')}/login?magicToken=${token}&email=${encodeURIComponent(normalizedEmail)}&mode=${mode === 'signup' ? 'signup' : 'login'}`;
+
+        await sendEmail(
+            normalizedEmail,
+            mode === 'signup' ? 'Create your Fancy Garments account' : 'Your Fancy Garments sign-in link',
+            buildMagicLinkTemplate(displayName, link, mode === 'signup' ? 'signup' : 'login')
+        );
+
+        res.json({ success: true, message: "Secure email link sent. Please check your inbox." });
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: error.message });
+    }
+};
+
+const verifyMagicLink = async (req, res) => {
+    try {
+        const { email, token, mode = 'login' } = req.body;
+        if (!email || !token) {
+            return res.json({ success: false, message: "Invalid magic link" });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const purpose = mode === 'signup' ? 'magic-signup' : 'magic-login';
+        const tokenRecord = await otpModel.findOne({ email: normalizedEmail, otp: token, purpose });
+        if (!tokenRecord) {
+            return res.json({ success: false, message: "Magic link is invalid or expired" });
+        }
+
+        let user = await userModel.findOne({ email: normalizedEmail });
+        if (!user) {
+            if (mode !== 'signup') {
+                return res.json({ success: false, message: "No account found. Please create one first." });
+            }
+
+            user = await userModel.create({
+                name: tokenRecord.name || getDisplayNameFromEmail(normalizedEmail),
+                email: normalizedEmail,
+                authProvider: 'email',
+            });
+        }
+
+        await otpModel.deleteOne({ _id: tokenRecord._id });
+        const authToken = createToken(user._id);
+        res.json({ success: true, token: authToken, message: "Email sign-in successful" });
     } catch (error) {
         console.log(error);
         return res.json({ success: false, message: error.message });
@@ -315,4 +482,4 @@ const resetPassword = async (req, res) => {
     }
 };
 
-export { loginUser, verifyLoginOtp, registerUser, verifyRegisterOtp, resendOtp, forgotPassword, verifyForgotOtp, resetPassword, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile };
+export { loginUser, verifyLoginOtp, googleAuth, requestMagicLink, verifyMagicLink, registerUser, verifyRegisterOtp, resendOtp, forgotPassword, verifyForgotOtp, resetPassword, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile };

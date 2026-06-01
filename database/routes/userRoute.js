@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { loginUser, verifyLoginOtp, registerUser, verifyRegisterOtp, resendOtp, forgotPassword, verifyForgotOtp, resetPassword, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile } from '../controllers/userController.js';
+import { loginUser, verifyLoginOtp, googleAuth, requestMagicLink, verifyMagicLink, registerUser, verifyRegisterOtp, resendOtp, forgotPassword, verifyForgotOtp, resetPassword, adminLogin, getUserProfile, updateUserProfile, allUsers, allProfiles, deleteUserProfile } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js';
 import { profileImageUpload } from '../middleware/multer.js';
 
@@ -9,6 +9,9 @@ const userRouter = express.Router();
 // Public routes
 userRouter.post('/login', loginUser);
 userRouter.post('/verify-login-otp', verifyLoginOtp);
+userRouter.post('/google', googleAuth);
+userRouter.post('/request-magic-link', requestMagicLink);
+userRouter.post('/verify-magic-link', verifyMagicLink);
 userRouter.post('/register', registerUser);
 userRouter.post('/verify-register-otp', verifyRegisterOtp);
 userRouter.post('/resend-otp', resendOtp);
